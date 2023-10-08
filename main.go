@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/williamjchen/terminalchess/server"
-	"fmt"
-	
+	"github.com/williamjchen/terminalchess/server"	
 )
 
 func main() {
-	fmt.Println("Hello!")
-
-	server.NewServer(".ssh/term_info_ed25519", "localhost", 2324)
+	s, err := server.NewServer(".ssh/term_info_ed25519", "localhost", 2324)
+	if err != nil {
+		return
+	}
+	s.Start()
 }
 
