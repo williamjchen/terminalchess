@@ -18,6 +18,7 @@ type Server struct {
 	host string
 	path string
 	port int
+	mng manager
 	srv *ssh.Server
 }
 
