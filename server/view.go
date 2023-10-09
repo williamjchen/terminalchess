@@ -3,8 +3,6 @@ package server
 import (
 	"log/slog"
 
-	Game "github.com/williamjchen/terminalchess/game"	
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -15,19 +13,6 @@ type (
 	errMsg error
 )
 
-type game struct {
-    game *Game.Game
-	whiteTurn bool
-
-}
-
-func NewGame() game {
-	g := game{
-		game: Game.NewGame(),
-		whiteTurn: true,
-	}
-	return g
-}
 type model struct {
     choices  []string           // items on the to-do list
     cursor   int                // which to-do list item our cursor is pointing at

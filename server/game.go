@@ -3,9 +3,25 @@ package server
 import (
 	"log/slog"
 	"strings"
+	
+	Game "github.com/williamjchen/terminalchess/game"	
 
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+type game struct {
+    game *Game.Game
+	whiteTurn bool
+
+}
+
+func NewGame() game {
+	g := game{
+		game: Game.NewGame(),
+		whiteTurn: true,
+	}
+	return g
+}
 
 func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
