@@ -77,7 +77,7 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m menu) View() string {
 	s := strings.Builder{}
-	s.WriteString("What kind of Bubble Tea would you like to order?\n\n")
+	s.WriteString("What chess mode would you like to play?\n\n")
 
 	for i := 0; i < len(m.choices); i++ {
 		if m.cursor == i {
@@ -92,4 +92,3 @@ func (m menu) View() string {
 
 	return s.String()
 }
-
