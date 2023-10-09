@@ -1,9 +1,16 @@
 package game
 
 type Game struct {
-	board board
+	board *board
 }
 
-func (g *Game) PrintBoard() {
-	g.board.PrintBoard()
+func NewGame() *Game{
+	g := Game{
+		board: NewBoard(),
+	}
+	return &g
+}
+
+func (g *Game) PrintBoard() string{
+	return g.board.PrintBoard()
 }

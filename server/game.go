@@ -1,7 +1,7 @@
 package server
 
 import (
-	"log/slog"
+	"strings"
 
 	Game "github.com/williamjchen/terminalchess/game"	
 
@@ -9,15 +9,16 @@ import (
 )
 
 type game struct {
-    game Game.Game
+    game *Game.Game
 	turn bool
 
 }
 
 func NewGame() *game {
     g := game {
-
+		game: Game.NewGame(),
 	}
+
 	return &g
 }
 
@@ -32,23 +33,6 @@ func (m game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
-
-		case "enter":
-			// Send the choice on the channel and exit.
-			m.choice = m.choices[m.cursor]
-			return m, tea.Quit
-
-		case "down", "j":
-			m.cursor++
-			if m.cursor >= len(m.choices) {
-				m.cursor = 0
-			}
-
-		case "up", "k":
-			m.cursor--
-			if m.cursor < 0 {
-				m.cursor = len(m.choices) - 1
-			}
 		}
 	}
 
@@ -58,6 +42,6 @@ func (m game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m game) View() string {
 	s := strings.Builder{}
 	
-	s.WriteString(m.game.)
+	s.WriteString(m.game.PrintBoard())
 	return s.String()
 }

@@ -96,11 +96,18 @@ func (b *board) buildChessRow(row int) string {
 }
 
 func (b *board) buildPaddingRow(row int) string {
-	if b.padding == 1 {
-		return ""
-	}
-	// TO-DO: non 1 padding
 	return ""
+	s := strings.Builder{}
+	s.WriteString("  ")
+	s.WriteString(b.vert)
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 5; j++ {
+			s.WriteString(" ")
+		}
+		s.WriteString(b.vert)
+	}
+	s.WriteString("\n")
+	return s.String()
 }
 
 func (b *board) PrintBoard() string{
