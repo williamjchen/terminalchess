@@ -46,6 +46,7 @@ func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
+			m.common.begin = true
 			m.idInput.Reset()
 			return m, cmd
 		}

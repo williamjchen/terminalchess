@@ -21,11 +21,12 @@ type lobby struct {
 
 func NewLobby(done chan string) (*lobby, string) {
 	id := randId(6)
+	g := Game.NewGame()
 	l := lobby{
 		id: id,
 		p1: nil,
 		p2: nil,
-		game: nil,
+		game: g,
 		done: done,
 	}
 	return &l, id
