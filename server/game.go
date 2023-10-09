@@ -1,127 +1,106 @@
 package server
 
 import (
-	"strings"
 
-	Game "github.com/williamjchen/terminalchess/game"	
-
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type game struct {
-    game *Game.Game
+type gameModel struct {
+	common *commonModel
+	stockfish stockfishModel
+	join joinModel
+	create createModel
+	textinput textinput.Model
+    lobby *lobby
+
 }
 
-func NewGame() game {
-	g := game{
-		game: Game.NewGame(),
+func NewGame(com *commonModel) gameModel {
+	ti := textinput.New()
+	ti.Placeholder = "Enter move in algebraic notation..."
+	ti.CharLimit = 5
+	ti.Width = 20
+
+	g := gameModel{
+		common: com,
+		stockfish: NewStockfishModel(),
+		join: NewJoinModel(),
+		create: NewCreateModel(),
+		textinput: ti,
 	}
 	return g
 }
 
-func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	switch m.choice {
-	case m.choices[0]: // stockfish
-		return stockfishUpdate(msg, m)
-	case m.choices[1]: // join
-		return joinUpdate(msg, m)
-	case m.choices[2]: // create
-		return createUpdate(msg, m)
+func (m gameModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch m.common.choice {
+	case m.common.choices[0]: // stockfish
+		s, cmd := m.stockfish.Update(msg)
+		m.stockfish = s.(stockfishModel)
+		return m, cmd
+	case m.common.choices[1]: // join
+		j, cmd := m.join.Update(msg)
+		m.join = j.(joinModel)
+		return m, cmd
+	case m.common.choices[2]: // create
+		c, cmd := m.create.Update(msg)
+		m.create = c.(createModel)
+		return m, cmd
 	default:
 		return m, nil
 	}
 }
 
-func chosenView(m model) string {
-	switch m.choice {
-	case m.choices[0]: // stockfish
-		return stockfishView(m)
-	case m.choices[1]: // join
-		return joinView(m)
-	case m.choices[2]: // create
-		return createView(m)
+func (m gameModel) View() string {
+	switch m.common.choice {
+	case m.common.choices[0]: // stockfish
+		return m.stockfish.View()
+	case m.common.choices[1]: // join
+		return m.join.View()
+	case m.common.choices[2]: // create
+		return m.create.View()
 	default:
 		return ""
 	}
 }
 
-func stockfishUpdate(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	return m, nil
-}
+// func gameUpdate(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
+// 	m.textinput.Focus()
 
-func stockfishView(m model) string {
-	return ""
-}
+// 	var cmd tea.Cmd
 
-func joinUpdate(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	m.idInput.Focus()
+// 	switch msg := msg.(type) {
+// 	case tea.KeyMsg:
+// 		switch msg.Type {
+// 		case tea.KeyEnter:
+// 			m.textinput.Reset()
+// 			return m, cmd
+// 		}
 
-	var cmd tea.Cmd
+// 	case errMsg:
+// 		return m, nil
+// 	}
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
-			m.idInput.Reset()
-			return m, cmd
-		}
+// 	m.textinput, cmd = m.textinput.Update(msg)
+// 	return m, cmd
+// }
 
-	case errMsg:
-		return m, nil
-	}
+// func gameView(m model) string {
+// 	s := strings.Builder{}
 
-	m.idInput, cmd = m.idInput.Update(msg)
-	return m, cmd
-}
-
-func joinView(m model) string {
-	s := strings.Builder{}
-	s.WriteString("Enter Room Code...\n")
-	s.WriteString(m.idInput.View())
-	return s.String()
-}
-
-func createUpdate(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	return m, nil
-}
-
-func createView(m model) string {
-	return ""
-}
-
-func gameUpdate(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	m.textinput.Focus()
+// 	s.WriteString(m.lobby.game.game.PrintBoard())
+// 	s.WriteString("\n\n")
 	
-	var cmd tea.Cmd
+// 	if m.lobby.game.game.WhiteTurn() {
+// 		s.WriteString("White to move\n")
+// 	} else {
+// 		s.WriteString("Black to Move\n")
+// 	}
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
-			m.textinput.Reset()
-			return m, cmd
-		}
-
-	case errMsg:
-		return m, nil
-	}
-
-	m.textinput, cmd = m.textinput.Update(msg)
-	return m, cmd
-}
-
-func gameView(m model) string {
-	s := strings.Builder{}
-
-	s.WriteString(m.lobby.game.game.PrintBoard())
-	s.WriteString("\n\n")
-	
-	if m.lobby.game.game.WhiteTurn() {
-		s.WriteString("White to move\n")
-	} else {
-		s.WriteString("Black to Move\n")
-	}
-
-	s.WriteString(m.textinput.View())
-	return s.String()
-}
+// 	s.WriteString(m.textinput.View())
+// 	return s.String()
+// }

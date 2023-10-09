@@ -4,8 +4,6 @@ import (
 	"log/slog"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
     "github.com/charmbracelet/ssh"
 )
 
@@ -13,16 +11,21 @@ type (
 	errMsg error
 )
 
-type model struct {
-    choices  []string           // items on the to-do list
-    cursor   int                // which to-do list item our cursor is pointing at
+const (
+	showMenu int = iota
+	showGame
+)
+
+type commonModel struct {
+	choices  []string           // items on the to-do list
     choice string
-	id string
 	chosen bool
-	viewport viewport.Model
-	textinput textinput.Model
-	idInput textinput.Model
-    lobby *lobby
+}
+type parentModel struct {
+	state int
+	common *commonModel
+	menu menuModel
+	game gameModel
 }
 
 func GetModelOption(s ssh.Session, options []string) {
@@ -38,30 +41,27 @@ func GetModelOption(s ssh.Session, options []string) {
     }
 }
 
-func Model(options []string) model {
-	ti := textinput.New()
-	ti.Placeholder = "Enter move in algebraic notation..."
-	ti.CharLimit = 5
-	ti.Width = 20
-
-	ii := textinput.New()
-	ii.Placeholder = "XXXXXX"
-	ii.CharLimit = 6
-	ii.Width = 20
-
-	return model{
-		choices:  options,
+func Model(options []string) parentModel {
+	common := commonModel {
+		choices: options,
+		choice: "",
 		chosen: false,
-		textinput: ti,
-		idInput: ii,
 	}
+
+	p := parentModel{
+		common: &common,
+		menu: NewMenu(&common),
+		game: NewGame(&common),
+	}
+
+	return p
 }
 
-func (m model) Init() tea.Cmd {
-    return tea.Batch(tea.EnterAltScreen, textinput.Blink)
+func (m parentModel) Init() tea.Cmd {
+    return tea.EnterAltScreen
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		k := msg.String()
 		if k == "esc" || k == "ctrl+c" {
@@ -69,17 +69,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if m.chosen {
-		return updateChosen(msg, m)
-	} else {
-		return updateChoices(msg, m)
+	switch m.state{
+	case showMenu:
+		men, cmd := m.menu.Update(msg)
+		m.menu = men.(menuModel)
+		if m.common.chosen {
+			m.state = showGame
+		}
+		return m, cmd
+	case showGame:
+		g, cmd := m.game.Update(msg)
+		m.game = g.(gameModel)
+		return m, cmd
 	}
+	return m, nil
 }
 
-func (m model) View() string {
-	if m.chosen {
-		return chosenView(m)
-	} else {
-		return choicesViews(m)
+func (m parentModel) View() string {
+	switch m.state{
+	case showMenu:
+		return m.menu.View()
+	case showGame:
+		return m.game.View()
 	}
+	return ""
 }

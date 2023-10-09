@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"math"
 
+	Game "github.com/williamjchen/terminalchess/game"	
+
 	"github.com/charmbracelet/ssh"
 )
 type lobby struct {
@@ -13,7 +15,7 @@ type lobby struct {
 	p1 *player
 	p2 *player
 	specs []*player
-	game *game
+	game *Game.Game
 	done chan string
 }
 
