@@ -20,6 +20,7 @@ type commonModel struct {
 	choices  []string           // items on the to-do list
     choice string
 	chosen bool
+	begin bool
 }
 type parentModel struct {
 	state int
@@ -46,6 +47,7 @@ func Model(options []string) parentModel {
 		choices: options,
 		choice: "",
 		chosen: false,
+		begin: false,
 	}
 
 	p := parentModel{

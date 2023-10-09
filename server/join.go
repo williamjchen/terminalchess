@@ -8,16 +8,18 @@ import (
 )
 
 type joinModel struct {
+	common *commonModel
 	idInput textinput.Model
 }
 
-func NewJoinModel() joinModel {
+func NewJoinModel(com *commonModel) joinModel {
 	ii := textinput.New()
 	ii.Placeholder = "XXXXXX"
 	ii.CharLimit = 6
 	ii.Width = 20
 
 	j := joinModel {
+		common: com,
 		idInput: ii,
 	}
 

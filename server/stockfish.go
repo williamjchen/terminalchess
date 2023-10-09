@@ -5,11 +5,13 @@ import (
 )
 
 type stockfishModel struct {
-
+	common *commonModel
 }
 
-func NewStockfishModel() stockfishModel {
-	s := stockfishModel {}
+func NewStockfishModel(com *commonModel) stockfishModel {
+	s := stockfishModel {
+		common: com,
+	}
 	return s
 }
 
@@ -24,7 +26,7 @@ func (m stockfishModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-	
+
 	return m, nil
 }
 

@@ -13,7 +13,6 @@ type gameModel struct {
 	create createModel
 	textinput textinput.Model
     lobby *lobby
-
 }
 
 func NewGame(com *commonModel) gameModel {
@@ -24,9 +23,9 @@ func NewGame(com *commonModel) gameModel {
 
 	g := gameModel{
 		common: com,
-		stockfish: NewStockfishModel(),
-		join: NewJoinModel(),
-		create: NewCreateModel(),
+		stockfish: NewStockfishModel(com),
+		join: NewJoinModel(com),
+		create: NewCreateModel(com),
 		textinput: ti,
 	}
 	return g
@@ -37,6 +36,10 @@ func (m gameModel) Init() tea.Cmd {
 }
 
 func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.common.begin {
+
+	}
+
 	switch m.common.choice {
 	case m.common.choices[0]: // stockfish
 		s, cmd := m.stockfish.Update(msg)

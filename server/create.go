@@ -5,11 +5,13 @@ import (
 )
 
 type createModel struct {
-
+	common *commonModel
 }
 
-func NewCreateModel() createModel {
-	c := createModel{}
+func NewCreateModel(com *commonModel) createModel {
+	c := createModel{
+		common: com,
+	}
 
 	return c
 }
