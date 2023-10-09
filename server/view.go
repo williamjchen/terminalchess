@@ -7,14 +7,21 @@ import (
 	Game "github.com/williamjchen/terminalchess/game"	
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
     "github.com/charmbracelet/ssh"
 )
 
+type (
+	errMsg error
+)
 type model struct {
     choices  []string           // items on the to-do list
     cursor   int                // which to-do list item our cursor is pointing at
     choice string
 	chosen bool
+	viewport viewport.Model
+	textinput textinput.Model
     game *Game.Game
 }
 
@@ -33,21 +40,28 @@ func GetModelOption(s ssh.Session, options []string) {
 
 
 func Model(options []string) model {
+	ti := textinput.New()
+	ti.Placeholder = "Enter move in algebraic notation..."
+	ti.Focus()
+	ti.CharLimit = 5
+	ti.Width = 20
+
 	return model{
 		choices:  options,
 		chosen: false,
+		textinput: ti,
 		game: Game.NewGame(),
 	}
 }
 
 func (m model) Init() tea.Cmd {
-    return tea.EnterAltScreen
+    return tea.Batch(tea.EnterAltScreen, textinput.Blink)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		k := msg.String()
-		if k == "q" || k == "esc" || k == "ctrl+c" {
+		if k == "esc" || k == "ctrl+c" {
 			return m, tea.Quit
 		}
 	}
@@ -71,7 +85,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		case "ctrl+c", "esc":
 			return m, tea.Quit
 
 		case "enter":
@@ -97,7 +111,22 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 }
 
 func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	return m, nil
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEnter:
+			m.textinput.Reset()
+			return m, cmd
+		}
+
+	case errMsg:
+		return m, nil
+	}
+
+	m.textinput, cmd = m.textinput.Update(msg)
+	return m, cmd
 }
 
 func choicesViews(m model) string {
@@ -113,12 +142,13 @@ func choicesViews(m model) string {
 		s.WriteString(m.choices[i])
 		s.WriteString("\n")
 	}
-	s.WriteString("\n(press q to quit)\n")
+	s.WriteString("\n(press esc to quit)\n")
 
 	return s.String()
 }
 
 func chosenView(m model) string {
+	s := strings.Builder{}
 	switch m.choice {
 	case "":
 		slog.Info("optiion", m.choice)
@@ -129,5 +159,8 @@ func chosenView(m model) string {
 	case m.choices[2]:
 		slog.Info("option", m.choice)
 	}
-	return m.game.PrintBoard()
+	s.WriteString(m.game.PrintBoard())
+	s.WriteString("\n")
+	s.WriteString(m.textinput.View())
+	return s.String()
 }
