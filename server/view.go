@@ -11,8 +11,10 @@ type (
 	errMsg error
 )
 
+type state int
+
 const (
-	showMenu int = iota
+	showMenu state = iota
 	showGame
 )
 
@@ -23,7 +25,7 @@ type commonModel struct {
 	begin bool
 }
 type parentModel struct {
-	state int
+	state state
 	common *commonModel
 	menu menuModel
 	game gameModel
