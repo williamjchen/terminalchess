@@ -31,13 +31,14 @@ type position struct {
     enPassant uint64 // en passant square
 }
 
-func NewPosition() *position {
+func NewPosition(fen string) *position {
 	p := position{}
 
 	p.pieceToChar = " PNBRQK  pnbrqk"
 	p.active = 0
 	p.castleRights = 0
 	p.enPassant = 0
+	p.loadPosition(fen)
 
 	return &p
 }
@@ -68,6 +69,10 @@ func (p *position)getBlackPieces() uint64 {return p.colourBB[1]}
 func (p *position)getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 
 func (p *position)loadPosition(fen string) error {
+	if fen == "" {
+		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	}
+
 	parts := strings.Fields(fen)
 	if len(parts) != 6 {
 		return fmt.Errorf("Invalid FEN string %s", fen)
@@ -92,8 +97,6 @@ func (p *position)loadPosition(fen string) error {
 
 			col++
 		}
-
-
 	}
 
 	// 2. load active colour

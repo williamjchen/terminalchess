@@ -4,6 +4,6 @@ type Game struct {
 	board board
 }
 
-func (g *Game) printBoard() {
-	g.board.printBoard()
+func (g *Game) PrintBoard() {
+	g.board.PrintBoard()
 }

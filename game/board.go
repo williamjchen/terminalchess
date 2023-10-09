@@ -1,9 +1,131 @@
 package game
 
-type board struct {
+import (
+	"strings"
+	"strconv"
+)
 
+type board struct {
+	pieces_unicode map[string] string
+	upT, cross, botT, leftT, rightT, leftBotEnd, rightBotEnd, rightUpEnd, leftUpEnd, horiz, vert string
+	padding int
+	pos *position
 }
 
-func (b *board) printBoard() {
+func NewBoard() *board {
+	b := board{}
+	b.pieces_unicode = map[string]string {
+		"R": "♜", 
+        "N": "♞", 
+        "B": "♝", 
+        "Q": "♛", 
+        "K": "♚", 
+        "P": "♟", 
+        "r": "♖", 
+        "n": "♘", 
+        "b": "♗", 
+        "q": "♕", 
+        "k": "♔",
+        "p": "♙",
+        " ": " ",
+	}
+	b.upT = "┬";
+    b.cross = "┼";
+    b.botT = "┴";
+    b.leftT = "├";
+    b.rightT = "┤";
+    b.leftBotEnd = "└";
+    b.rightBotEnd = "┘";
+    b.rightUpEnd = "┐";
+    b.leftUpEnd = "┌";
+    b.horiz = "─";
+    b.vert = "│";
+
+	b.padding = 1
+
+	b.pos = NewPosition("")
+
+	return &b
+}
+
+func (b *board) buildBorderRow(row int) string {
+	var leftEdge, middle, rightEdge string
+	switch row{
+	case 0:
+		leftEdge = b.leftUpEnd
+		middle = b.upT
+		rightEdge = b.rightUpEnd
+	case 9:
+		leftEdge = b.leftBotEnd
+		middle = b.botT
+		rightEdge = b.rightBotEnd
+	default:
+		leftEdge = b.leftT
+		middle = b.cross
+		rightEdge = b.rightT
+	}
+
+	s := strings.Builder{}
+	s.WriteString("  ")
+	s.WriteString(leftEdge)
+	for i := 0; i < 7; i++ {
+		for j := 0; j < b.padding * 2 + 1; j++ {
+			s.WriteString(b.horiz)
+		}
+		s.WriteString(middle)
+	}
+	for j := 0; j < b.padding * 2 + 1; j++ {
+		s.WriteString(b.horiz)
+	}
+	s.WriteString(rightEdge)
+	return s.String()
+}
+
+func (b *board) buildChessRow(row int) string {
+	s := strings.Builder{}
+	s.WriteString(strconv.Itoa(8 - row))
+	s.WriteString(" ")
+	s.WriteString(b.vert)
+	for i := 0; i < 8; i++ {
+		s.WriteString(strings.Repeat(" ", b.padding))
+		s.WriteString(b.pieces_unicode[b.pos.pieceAtPosition(8 - row, i + 1)])
+		s.WriteString(strings.Repeat(" ", b.padding))
+		s.WriteString(b.vert)
+	}
+	return s.String()
+}
+
+func (b *board) buildPaddingRow(row int) string {
+	if b.padding == 1 {
+		return ""
+	}
+	// TO-DO: non 1 padding
+	return ""
+}
+
+func (b *board) PrintBoard() string{
+	s := strings.Builder{}
+	for i := 0; i < 8; i++ {
+		s.WriteString(b.buildBorderRow(i))
+		s.WriteString("\n")
+		s.WriteString(b.buildPaddingRow(i))
+		s.WriteString(b.buildChessRow(i))
+		s.WriteString("\n")
+		s.WriteString(b.buildPaddingRow(i))
+	}
+	s.WriteString(b.buildBorderRow(9))
+	s.WriteString("\n")
+
+	letters := []string{"A", "B", "C", "D", "E", "F", "G", "H"}
+	labels := strings.Builder{}
+	labels.WriteString("  ")
 	
+	for i := 0; i < 8; i++ {
+		labels.WriteString(strings.Repeat(" ", b.padding + 1))
+		labels.WriteString(letters[i])
+		labels.WriteString(strings.Repeat(" ", b.padding))
+	}
+
+	s.WriteString(labels.String())
+	return s.String()
 }
