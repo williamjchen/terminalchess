@@ -2,7 +2,7 @@ package game
 
 type Game struct {
 	board *board
-	
+
 }
 
 func NewGame() *Game{
@@ -10,6 +10,10 @@ func NewGame() *Game{
 		board: NewBoard(),
 	}
 	return &g
+}
+
+func (g *Game) WhiteTurn() bool {
+	return g.board.pos.whiteTurn
 }
 
 func (g *Game) PrintBoard() string{

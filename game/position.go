@@ -24,7 +24,7 @@ type position struct {
     // black pawn - 9, black knight  - 10, black bishop - 11, black rook - 12, black queen - 13, black king - 14
     pieceToChar string
 
-	active int// 0 = white, 1 = black
+	whiteTurn bool// 0 = white, 1 = black
     castleRights int // 0 = no rights, 1 = white king, 2 = white queen, 4 = black king, 8 = black queen, 15 = all
     halfMoveClock int
     fullMoveNumber int
@@ -35,7 +35,7 @@ func NewPosition(fen string) *position {
 	p := position{}
 
 	p.pieceToChar = " PNBRQK  pnbrqk"
-	p.active = 0
+	p.whiteTurn = true
 	p.castleRights = 0
 	p.enPassant = 0
 	p.loadPosition(fen)
@@ -70,7 +70,7 @@ func (p *position)getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 
 
 func (p *position)validateMove() {
-	
+
 }
 
 func (p *position)move() {
@@ -110,9 +110,9 @@ func (p *position)loadPosition(fen string) error {
 
 	// 2. load active colour
 	if rune(parts[1][0]) == 'w' {
-		p.active = 0
+		p.whiteTurn = true
 	} else {
-		p.active = 1
+		p.whiteTurn = false
 	}
 
 	// 3. load castling availability

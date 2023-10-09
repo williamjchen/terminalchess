@@ -17,10 +17,12 @@ type model struct {
     choices  []string           // items on the to-do list
     cursor   int                // which to-do list item our cursor is pointing at
     choice string
+	id string
 	chosen bool
 	viewport viewport.Model
 	textinput textinput.Model
-    game game
+	idInput textinput.Model
+    lobby *lobby
 }
 
 func GetModelOption(s ssh.Session, options []string) {
@@ -36,19 +38,22 @@ func GetModelOption(s ssh.Session, options []string) {
     }
 }
 
-
 func Model(options []string) model {
 	ti := textinput.New()
 	ti.Placeholder = "Enter move in algebraic notation..."
-	ti.Focus()
 	ti.CharLimit = 5
 	ti.Width = 20
+
+	ii := textinput.New()
+	ii.Placeholder = "XXXXXX"
+	ii.CharLimit = 6
+	ii.Width = 20
 
 	return model{
 		choices:  options,
 		chosen: false,
 		textinput: ti,
-		game: NewGame(),
+		idInput: ii,
 	}
 }
 
