@@ -48,6 +48,10 @@ func NewBoard() *board {
 	return &b
 }
 
+func (b *board) move() {
+	
+}
+
 func (b *board) buildBorderRow(row int) string {
 	var leftEdge, middle, rightEdge string
 	switch row{

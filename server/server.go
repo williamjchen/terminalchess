@@ -18,7 +18,7 @@ type Server struct {
 	host string
 	path string
 	port int
-	mng manager
+	mng *manager
 	srv *ssh.Server
 }
 
@@ -27,6 +27,7 @@ func NewServer(path, host string, port int) (*Server, error){
 		host: host,
 		path: path,
 		port: port,
+		mng: NewManager(),
 	}
 	s, err := wish.NewServer(
 		wish.WithAddress(fmt.Sprintf("%s:%d", host, port)),

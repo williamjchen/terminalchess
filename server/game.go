@@ -42,7 +42,7 @@ func chosenView(m model) string {
 	s.WriteString(m.game.game.PrintBoard())
 	s.WriteString("\n\n")
 	
-	if m.game.turn {
+	if m.game.whiteTurn {
 		s.WriteString("White to move\n")
 	} else {
 		s.WriteString("Black to Move\n")

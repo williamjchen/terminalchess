@@ -17,14 +17,14 @@ type (
 
 type game struct {
     game *Game.Game
-	turn bool
+	whiteTurn bool
 
 }
 
 func NewGame() game {
 	g := game{
 		game: Game.NewGame(),
-		turn: true,
+		whiteTurn: true,
 	}
 	return g
 }

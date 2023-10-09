@@ -68,6 +68,15 @@ func (p *position)getWhitePieces() uint64 {return p.colourBB[0]}
 func (p *position)getBlackPieces() uint64 {return p.colourBB[1]}
 func (p *position)getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 
+
+func (p *position)validateMove() {
+	
+}
+
+func (p *position)move() {
+
+}
+
 func (p *position)loadPosition(fen string) error {
 	if fen == "" {
 		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

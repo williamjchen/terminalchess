@@ -2,6 +2,7 @@ package game
 
 type Game struct {
 	board *board
+	
 }
 
 func NewGame() *Game{
@@ -13,4 +14,8 @@ func NewGame() *Game{
 
 func (g *Game) PrintBoard() string{
 	return g.board.PrintBoard()
+}
+
+func (g *Game) Move(cmd string) {
+
 }
