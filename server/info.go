@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log/slog"
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss/table"
@@ -12,7 +11,6 @@ type infoModel struct {
 	common *commonModel
 	style lipgloss.Style
 	table *table.Table
-	flipped bool
 	row1 string
 	row2 string
 	row3 string
@@ -39,20 +37,12 @@ func NewInfoModel(com *commonModel) *infoModel {
 		common: com,
 		style: lipgloss.NewStyle().MarginLeft(3),
 		table: t,
-		flipped: false,
 	}
 
 	return &i
 }
 
-func (m *infoModel) Flip() {
-	slog.Info("Flip Info", "old:", m.flipped, "new:", !m.flipped)
-	m.flipped = !m.flipped
-	slog.Info("Flip Info", "cur:", m.flipped)
-
-}
-
-func (m *infoModel) View() string {
+func (m *infoModel) View(flipped bool) string {
 	var rows [][]string
 	var whiteName, blackName, code string = "None", "Nil", "None"
 
@@ -66,7 +56,7 @@ func (m *infoModel) View() string {
 		code = m.common.player.lob.id
 	}
 
-	if m.flipped {
+	if flipped {
 		rows = [][]string{[]string{whiteName}, []string{fmt.Sprintf("Code: %s", code)}, []string{blackName}}
 	} else {
 		rows = [][]string{[]string{blackName}, []string{fmt.Sprintf("Code: %s", code)}, []string{whiteName}}

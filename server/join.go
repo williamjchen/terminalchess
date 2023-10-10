@@ -16,7 +16,7 @@ type joinModel struct {
 
 type lobMsg *lobby
 
-func NewJoinModel(com *commonModel) joinModel {
+func NewJoinModel(com *commonModel) *joinModel {
 	ii := textinput.New()
 	ii.Placeholder = "XXXXXX"
 	ii.CharLimit = 6
@@ -28,7 +28,7 @@ func NewJoinModel(com *commonModel) joinModel {
 		tried: false,
 	}
 
-	return j
+	return &j
 }
 
 func getLobby(id string, srv *Server) tea.Cmd {
@@ -42,7 +42,7 @@ func (m joinModel) Init() tea.Cmd {
     return nil
 }
 
-func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.idInput.Focus()
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -69,8 +69,11 @@ func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			l.AddPlayer(m.common.sess, m.common.player)
 			m.common.player.lob = l
-			m.common.player.lob.game.SetFlipped(m.common.player.playerType == black)
+			m.common.player.SetFlipped(m.common.player.playerType == black)
 
+			//m.common.srv.mng.FindLobby(l.id)
+			//m.common.program.Send(updateMsg{})
+			//m.common.
 			return m, nil
 		}
 
@@ -81,7 +84,7 @@ func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m joinModel) View() string {
+func (m *joinModel) View() string {
 	s := strings.Builder{}
 	s.WriteString("Enter Room Code...\n")
 	s.WriteString(m.idInput.View())

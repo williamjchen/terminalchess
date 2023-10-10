@@ -8,18 +8,18 @@ type stockfishModel struct {
 	common *commonModel
 }
 
-func NewStockfishModel(com *commonModel) stockfishModel {
+func NewStockfishModel(com *commonModel) *stockfishModel {
 	s := stockfishModel {
 		common: com,
 	}
-	return s
+	return &s
 }
 
-func (m stockfishModel) Init() tea.Cmd {
+func (m *stockfishModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m stockfishModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *stockfishModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		k := msg.String()
 		if k == "esc" || k == "ctrl+c" {
@@ -30,6 +30,6 @@ func (m stockfishModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m stockfishModel) View() string {
+func (m *stockfishModel) View() string {
 	return ""
 }

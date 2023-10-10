@@ -9,19 +9,20 @@ import (
 )
 
 type chessMsg bool
+type updateMsg struct{}
 
 type gameModel struct {
 	common *commonModel
 	info *infoModel
-	stockfish stockfishModel
-	join joinModel
-	create createModel
+	stockfish *stockfishModel
+	join *joinModel
+	create *createModel
 	spinner spinnerModel
 	textinput textinput.Model
 	validMove bool
 }
 
-func NewGame(com *commonModel) gameModel {
+func NewGame(com *commonModel) *gameModel {
 	ti := textinput.New()
 	ti.Placeholder = "Enter move in algebraic notation..."
 	ti.CharLimit = 5
@@ -37,7 +38,7 @@ func NewGame(com *commonModel) gameModel {
 		textinput: ti,
 		validMove: true,
 	}
-	return g
+	return &g
 }
 
 func sendMove(move string) tea.Cmd {
@@ -47,11 +48,11 @@ func sendMove(move string) tea.Cmd {
 	}
 }
 
-func (m gameModel) Init() tea.Cmd {
+func (m *gameModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.common.player.lob != nil {
 		return gameUpdate(msg, m)
 	}
@@ -59,7 +60,7 @@ func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.common.choice {
 	case m.common.choices[1]: // join
 		j, cmd := m.join.Update(msg)
-		m.join = j.(joinModel)
+		m.join = j.(*joinModel)
 		return m, cmd
 	default:
 		return m, nil
@@ -79,7 +80,7 @@ func (m gameModel) View() string {
 	}
 }
 
-func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
+func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 	m.textinput.Focus()
 
 	var cmd tea.Cmd
@@ -91,8 +92,7 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 			m.textinput.Reset()
 			return m, sendMove("")
 		case "ctrl+f":
-			m.common.player.lob.game.Flip()
-			m.info.Flip()
+			m.common.player.Flip()
 			return m, cmd
 		}
 
@@ -101,6 +101,9 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 
 	case chessMsg:
 		m.validMove = bool(msg)
+
+	case updateMsg:
+		return m, nil
 	}
 
 	m.textinput, cmd = m.textinput.Update(msg)
@@ -110,7 +113,7 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 func gameView(m gameModel) string {
 	s := strings.Builder{}
 
-	s.WriteString(m.common.player.lob.game.PrintBoard())
+	s.WriteString(m.common.player.lob.game.PrintBoard(m.common.player.flipped))
 	s.WriteString("\n\n")
 	
 	if m.common.player.lob.game.WhiteTurn() {
@@ -126,6 +129,5 @@ func gameView(m gameModel) string {
 		b.WriteString("\nInvalid Move! Try again...")
 	}
 
-	return lipgloss.JoinHorizontal(0.38, s.String(), m.info.View()) + "\n" + b.String()
-	return s.String()
+	return lipgloss.JoinHorizontal(0.38, s.String(), m.info.View(m.common.player.flipped)) + "\n" + b.String()
 }

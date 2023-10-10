@@ -31,8 +31,8 @@ type commonModel struct {
 type parentModel struct {
 	state state
 	common *commonModel
-	menu menuModel
-	game gameModel
+	menu *menuModel
+	game *gameModel
 }
 
 func GetModelOption(s ssh.Session, options []string, server *Server, sess ssh.Session) {
@@ -85,14 +85,14 @@ func (m parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.state{
 	case showMenu:
 		men, cmd := m.menu.Update(msg)
-		m.menu = men.(menuModel)
+		m.menu = men.(*menuModel)
 		if m.common.chosen {
 			m.state = showGame
 		}
 		return m, cmd
 	case showGame:
 		g, cmd := m.game.Update(msg)
-		m.game = g.(gameModel)
+		m.game = g.(*gameModel)
 		return m, cmd
 	}
 	return m, nil

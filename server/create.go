@@ -8,19 +8,19 @@ type createModel struct {
 	common *commonModel
 }
 
-func NewCreateModel(com *commonModel) createModel {
+func NewCreateModel(com *commonModel) *createModel {
 	c := createModel{
 		common: com,
 	}
 
-	return c
+	return &c
 }
 
 func (m createModel) Init() tea.Cmd{
 	return nil
 }
 
-func (m createModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *createModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String(){
@@ -43,6 +43,6 @@ func (m createModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m createModel) View() string {
+func (m *createModel) View() string {
 	return ""
 }

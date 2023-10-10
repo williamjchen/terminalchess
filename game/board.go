@@ -1,7 +1,6 @@
 package game
 
 import (
-	"log/slog"
 	"strings"
 	"strconv"
 )
@@ -47,8 +46,6 @@ func NewBoard() *board {
 
 	b.pos = NewPosition("")
 
-	b.flipped = false
-
 	return &b
 }
 
@@ -89,9 +86,9 @@ func (b *board) buildBorderRow(row int) string {
 	return s.String()
 }
 
-func (b *board) buildChessRow(row int) string {
+func (b *board) buildChessRow(row int, flipped bool) string {
 	s := strings.Builder{}
-	if b.flipped {
+	if flipped {
 		s.WriteString(strconv.Itoa(row + 1))
 	} else {
 		s.WriteString(strconv.Itoa(8 - row))
@@ -100,7 +97,7 @@ func (b *board) buildChessRow(row int) string {
 	s.WriteString(b.vert)
 	for i := 0; i < 8; i++ {
 		s.WriteString(strings.Repeat(" ", b.padding))
-		if b.flipped {
+		if flipped {
 			s.WriteString(b.pieces_unicode[b.pos.pieceAtPosition(row + 1, 8 - i)])
 		} else {
 			s.WriteString(b.pieces_unicode[b.pos.pieceAtPosition(8 - row, i + 1)])
@@ -126,13 +123,13 @@ func (b *board) buildPaddingRow(row int) string {
 	return s.String()
 }
 
-func (b *board) PrintBoard() string { // flipped = false is white at bottom
+func (b *board) PrintBoard(flipped bool) string { // flipped = false is white at bottom
 	s := strings.Builder{}
 	for i := 0; i < 8; i++ {
 		s.WriteString(b.buildBorderRow(i))
 		s.WriteString("\n")
 		s.WriteString(b.buildPaddingRow(i))
-		s.WriteString(b.buildChessRow(i))
+		s.WriteString(b.buildChessRow(i, flipped))
 		s.WriteString("\n")
 		s.WriteString(b.buildPaddingRow(i))
 	}
@@ -145,7 +142,7 @@ func (b *board) PrintBoard() string { // flipped = false is white at bottom
 	
 	for i := 0; i < 8; i++ {
 		labels.WriteString(strings.Repeat(" ", b.padding + 1))
-		if b.flipped {
+		if flipped {
 			labels.WriteString(letters[7 - i])
 		} else {
 			labels.WriteString(letters[i])
@@ -157,12 +154,3 @@ func (b *board) PrintBoard() string { // flipped = false is white at bottom
 	return s.String()
 }
 
-func (b * board) SetFlipped(flipped bool) {
-	slog.Info("set flipped", "old:", b.flipped, "new:", flipped)
-	b.flipped = flipped
-}
-
-func (b *board) Flip() {
-	slog.Info("flip board", "old:", b.flipped, "new:", !b.flipped)
-	b.flipped = !b.flipped
-}

@@ -11,6 +11,7 @@ type player struct {
 	name string
 	playerType playerType
 	lob *lobby
+	flipped bool
 }
 
 func NewPlayer() *player {
@@ -29,4 +30,12 @@ func (p *player) Move(cmd string) bool {
 		return p.lob.game.BlackMove(cmd)
 	}
 	return false
+}
+
+func (p *player) SetFlipped(flipped bool) {
+	p.flipped = flipped
+}
+
+func (p *player) Flip() {
+	p.flipped = !p.flipped
 }

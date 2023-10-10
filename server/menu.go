@@ -12,18 +12,18 @@ type menuModel struct {
 	cursor int
 }
 
-func NewMenu(com *commonModel) menuModel {
+func NewMenu(com *commonModel) *menuModel {
 	m := menuModel {
 		common: com,
 	}
-	return m
+	return &m
 }
 
-func (m menuModel) Init() tea.Cmd {
+func (m *menuModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -46,7 +46,8 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				l.AddPlayer(m.common.sess, m.common.player)
 				m.common.player.lob = l
-				m.common.player.lob.game.SetFlipped(m.common.player.playerType == black)
+				m.common.player.SetFlipped(m.common.player.playerType == black)
+
 				return m, nil
 			default:
 				return m, nil
@@ -70,7 +71,7 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 
 
-func (m menuModel) View() string {
+func (m *menuModel) View() string {
 	s := strings.Builder{}
 	s.WriteString("What chess mode would you like to play?\n\n")
 
