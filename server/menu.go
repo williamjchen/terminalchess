@@ -46,7 +46,7 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				l.AddPlayer(m.common.sess, m.common.player)
 				m.common.player.lob = l
-				m.common.player.lob.game.SetFlipped(m.common.player.playerType != black)
+				m.common.player.lob.game.SetFlipped(m.common.player.playerType == black)
 				return m, nil
 			default:
 				return m, nil

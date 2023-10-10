@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log/slog"
 	"strings"
 	"strconv"
 )
@@ -90,12 +91,20 @@ func (b *board) buildBorderRow(row int) string {
 
 func (b *board) buildChessRow(row int) string {
 	s := strings.Builder{}
-	s.WriteString(strconv.Itoa(8 - row))
+	if b.flipped {
+		s.WriteString(strconv.Itoa(row + 1))
+	} else {
+		s.WriteString(strconv.Itoa(8 - row))
+	}
 	s.WriteString(" ")
 	s.WriteString(b.vert)
 	for i := 0; i < 8; i++ {
 		s.WriteString(strings.Repeat(" ", b.padding))
-		s.WriteString(b.pieces_unicode[b.pos.pieceAtPosition(8 - row, i + 1)])
+		if b.flipped {
+			s.WriteString(b.pieces_unicode[b.pos.pieceAtPosition(row + 1, 8 - i)])
+		} else {
+			s.WriteString(b.pieces_unicode[b.pos.pieceAtPosition(8 - row, i + 1)])
+		}
 		s.WriteString(strings.Repeat(" ", b.padding))
 		s.WriteString(b.vert)
 	}
@@ -136,7 +145,11 @@ func (b *board) PrintBoard() string { // flipped = false is white at bottom
 	
 	for i := 0; i < 8; i++ {
 		labels.WriteString(strings.Repeat(" ", b.padding + 1))
-		labels.WriteString(letters[i])
+		if b.flipped {
+			labels.WriteString(letters[7 - i])
+		} else {
+			labels.WriteString(letters[i])
+		}
 		labels.WriteString(strings.Repeat(" ", b.padding))
 	}
 
@@ -145,5 +158,13 @@ func (b *board) PrintBoard() string { // flipped = false is white at bottom
 }
 
 func (b * board) SetFlipped(flipped bool) {
+	slog.Info("flip board", "old:", b.flipped, "new:", flipped)
 	b.flipped = flipped
+}
+
+func reverseString(str string) (result string) {
+	for _, v := range str {
+        result = string(v) + result
+    }
+    return
 }
