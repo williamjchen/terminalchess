@@ -162,9 +162,6 @@ func (b * board) SetFlipped(flipped bool) {
 	b.flipped = flipped
 }
 
-func reverseString(str string) (result string) {
-	for _, v := range str {
-        result = string(v) + result
-    }
-    return
+func (b *board) Flip() {
+	b.flipped = !b.flipped
 }

@@ -72,9 +72,12 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
+		switch msg.String() {
+		case "enter":
 			m.textinput.Reset()
+			return m, cmd
+		case "ctrl+f":
+			m.common.player.lob.game.Flip()
 			return m, cmd
 		}
 

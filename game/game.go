@@ -27,3 +27,7 @@ func (g *Game) Move(cmd string) {
 func (g *Game) SetFlipped(flipped bool) {
 	g.board.SetFlipped(flipped)
 }
+
+func (g *Game) Flip() {
+	g.board.Flip()
+}
