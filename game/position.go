@@ -154,7 +154,7 @@ func (p *position)loadPosition(fen string) error {
 	return nil
 }
 
-func (p *position)pieceAtPosition(rank, file int) string {
+func (p *position) pieceAtPosition(rank, file int) string {
 	index := p.fileRankToIndex(rank, file)
 
 	var piece, colour uint64 = 0, 0
@@ -164,10 +164,10 @@ func (p *position)pieceAtPosition(rank, file int) string {
 		}
 	}
 
-	if index != 0 {
-		colour = p.colourBB[0] & 0
+	if index & p.colourBB[0] != 0 {
+		colour = 0
 	} else {
-		colour = p.colourBB[0] & 1
+		colour = 1
 	}
 
 	if piece == 0 {

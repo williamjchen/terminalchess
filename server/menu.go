@@ -42,7 +42,7 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case m.common.choices[2]: // create
 				l := m.common.srv.mng.CreateLobby()
-				slog.Info("id", l.id)
+				slog.Info("Create lobby", "id:", l.id)
 				m.common.player.lob = l
 				return m, nil
 			default:
