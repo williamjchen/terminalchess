@@ -26,3 +26,7 @@ func (g *Game) WhiteMove(cmd string) bool {
 func (g *Game) BlackMove(cmd string) bool {
 	return true
 }
+
+func (g *Game) whiteTurn() bool {
+	return g.board.pos.whiteTurn
+}
