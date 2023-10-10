@@ -57,9 +57,10 @@ func Model(options []string, server *Server, sess ssh.Session) parentModel {
 		chosen: false,
 		begin: false,
 		srv: server,
-		player: NewPlayer(),
 		sess: sess,
 	}
+
+	common.player = NewPlayer(&common)
 
 	p := parentModel{
 		common: &common,

@@ -53,6 +53,14 @@ func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if
 
 }
 
+func (l *lobby) SendMsg(p *player, msg struct{}) { // sends message to other player that's not the argument
+	if l.p1 == p {
+		l.p2.common.program.Send(msg)
+	} else {
+		l.p1.common.program.Send(msg)
+	}
+}
+
 func randId(length int) string {
 	// https://stackoverflow.com/a/75518426/7361588
 	bi, err := rand.Int(

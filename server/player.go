@@ -9,14 +9,16 @@ const (
 )
 type player struct {
 	name string
+	common *commonModel
 	playerType playerType
 	lob *lobby
 	flipped bool
 }
 
-func NewPlayer() *player {
+func NewPlayer(com *commonModel) *player {
 	p := player{
 		name: "Anonymous",
+		common: com,
 		lob: nil,
 	}
 

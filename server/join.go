@@ -71,9 +71,7 @@ func (m *joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.common.player.lob = l
 			m.common.player.SetFlipped(m.common.player.playerType == black)
 
-			//m.common.srv.mng.FindLobby(l.id)
-			//m.common.program.Send(updateMsg{})
-			//m.common.
+			l.SendMsg(m.common.player, updateMsg{})
 			return m, nil
 		}
 
