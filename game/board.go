@@ -158,10 +158,11 @@ func (b *board) PrintBoard() string { // flipped = false is white at bottom
 }
 
 func (b * board) SetFlipped(flipped bool) {
-	slog.Info("flip board", "old:", b.flipped, "new:", flipped)
+	slog.Info("set flipped", "old:", b.flipped, "new:", flipped)
 	b.flipped = flipped
 }
 
 func (b *board) Flip() {
+	slog.Info("flip board", "old:", b.flipped, "new:", !b.flipped)
 	b.flipped = !b.flipped
 }

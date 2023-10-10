@@ -2,7 +2,6 @@ package game
 
 type Game struct {
 	board *board
-
 }
 
 func NewGame() *Game{
@@ -20,8 +19,12 @@ func (g *Game) PrintBoard() string{ // flipped = false is white at bottom
 	return g.board.PrintBoard()
 }
 
-func (g *Game) Move(cmd string) {
+func (g *Game) WhiteMove(cmd string) bool {
+	return true
+}
 
+func (g *Game) BlackMove(cmd string) bool {
+	return true
 }
 
 func (g *Game) SetFlipped(flipped bool) {

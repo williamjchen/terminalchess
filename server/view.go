@@ -26,6 +26,7 @@ type commonModel struct {
 	srv *Server
 	player *player
 	sess ssh.Session
+	program *tea.Program
 }
 type parentModel struct {
 	state state
@@ -35,11 +36,13 @@ type parentModel struct {
 }
 
 func GetModelOption(s ssh.Session, options []string, server *Server, sess ssh.Session) {
+	model := Model(options, server, sess)
     p := tea.NewProgram(
-        Model(options, server, sess),
+        model,
         tea.WithInput(s),
         tea.WithOutput(s),
     )
+	model.common.program = p
     _, err := p.Run()
     if err != nil {
         slog.Error("failed to run menu", err)

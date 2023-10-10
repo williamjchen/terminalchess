@@ -5,12 +5,14 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type chessMsg bool
 
 type gameModel struct {
 	common *commonModel
+	info *infoModel
 	stockfish stockfishModel
 	join joinModel
 	create createModel
@@ -27,6 +29,7 @@ func NewGame(com *commonModel) gameModel {
 
 	g := gameModel{
 		common: com,
+		info: NewInfoModel(com),
 		stockfish: NewStockfishModel(com),
 		join: NewJoinModel(com),
 		create: NewCreateModel(com),
@@ -89,6 +92,7 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 			return m, sendMove("")
 		case "ctrl+f":
 			m.common.player.lob.game.Flip()
+			m.info.Flip()
 			return m, cmd
 		}
 
@@ -115,11 +119,13 @@ func gameView(m gameModel) string {
 		s.WriteString("Black to Move\n")
 	}
 
-	s.WriteString(m.textinput.View())
+	b := strings.Builder{}
+	b.WriteString(m.textinput.View())
 
 	if !m.validMove {
-		s.WriteString("\nInvalid Move! Try again...")
+		b.WriteString("\nInvalid Move! Try again...")
 	}
 
+	return lipgloss.JoinHorizontal(0.38, s.String(), m.info.View()) + "\n" + b.String()
 	return s.String()
 }

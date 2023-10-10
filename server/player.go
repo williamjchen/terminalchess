@@ -21,3 +21,12 @@ func NewPlayer() *player {
 
 	return &p
 }
+
+func (p *player) Move(cmd string) bool {
+	if (p.playerType == white) {
+		return p.lob.game.WhiteMove(cmd)
+	} else if (p.playerType == black) {
+		return p.lob.game.BlackMove(cmd)
+	}
+	return false
+}
