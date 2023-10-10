@@ -7,6 +7,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type chessMsg bool
+
 type gameModel struct {
 	common *commonModel
 	stockfish stockfishModel
@@ -14,6 +16,7 @@ type gameModel struct {
 	create createModel
 	spinner spinnerModel
 	textinput textinput.Model
+	validMove bool
 }
 
 func NewGame(com *commonModel) gameModel {
@@ -29,8 +32,16 @@ func NewGame(com *commonModel) gameModel {
 		create: NewCreateModel(com),
 		spinner: NewSpinner(),
 		textinput: ti,
+		validMove: true,
 	}
 	return g
+}
+
+func sendMove(move string) tea.Cmd {
+	return func() tea.Msg {
+		status := false
+		return chessMsg(status)
+	}
 }
 
 func (m gameModel) Init() tea.Cmd {
@@ -75,7 +86,7 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "enter":
 			m.textinput.Reset()
-			return m, cmd
+			return m, sendMove("")
 		case "ctrl+f":
 			m.common.player.lob.game.Flip()
 			return m, cmd
@@ -83,6 +94,9 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 
 	case errMsg:
 		return m, nil
+
+	case chessMsg:
+		m.validMove = bool(msg)
 	}
 
 	m.textinput, cmd = m.textinput.Update(msg)
@@ -102,5 +116,10 @@ func gameView(m gameModel) string {
 	}
 
 	s.WriteString(m.textinput.View())
+
+	if !m.validMove {
+		s.WriteString("\nInvalid Move! Try again...")
+	}
+
 	return s.String()
 }
