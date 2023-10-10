@@ -59,6 +59,13 @@ func (l *lobby) SendMsg(p *player, msg struct{}) { // sends message to other pla
 	} else {
 		l.p1.common.program.Send(msg)
 	}
+	l.SendMsgToSpectators(msg)
+}
+
+func (l *lobby) SendMsgToSpectators(msg struct{}) {
+	for _, p := range l.specs {
+		p.common.program.Send(msg)
+	}
 }
 
 func randId(length int) string {
