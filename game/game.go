@@ -16,8 +16,8 @@ func (g *Game) WhiteTurn() bool {
 	return g.board.pos.whiteTurn
 }
 
-func (g *Game) PrintBoard() string{
-	return g.board.PrintBoard()
+func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at bottom
+	return g.board.PrintBoard(flipped)
 }
 
 func (g *Game) Move(cmd string) {

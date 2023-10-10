@@ -7,9 +7,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type gameState struct {
-	lobby *lobby
-}
 type gameModel struct {
 	common *commonModel
 	stockfish stockfishModel
@@ -27,9 +24,9 @@ func NewGame(com *commonModel) gameModel {
 
 	g := gameModel{
 		common: com,
-		stockfish: NewStockfishModel(com, com.gameState),
-		join: NewJoinModel(com, com.gameState),
-		create: NewCreateModel(com, com.gameState),
+		stockfish: NewStockfishModel(com),
+		join: NewJoinModel(com),
+		create: NewCreateModel(com),
 		spinner: NewSpinner(),
 		textinput: ti,
 	}
@@ -37,11 +34,11 @@ func NewGame(com *commonModel) gameModel {
 }
 
 func (m gameModel) Init() tea.Cmd {
-	return m.spinner.Init()
+	return nil
 }
 
 func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.common.gameState.lobby != nil {
+	if m.common.player.lob != nil {
 		return gameUpdate(msg, m)
 	}
 
@@ -56,7 +53,7 @@ func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m gameModel) View() string {
-	if m.common.gameState.lobby != nil {
+	if m.common.player.lob != nil {
 		return gameView(m)
 	}
 
@@ -92,10 +89,10 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 func gameView(m gameModel) string {
 	s := strings.Builder{}
 
-	s.WriteString(m.common.gameState.lobby.game.PrintBoard())
+	s.WriteString(m.common.player.lob.game.PrintBoard(m.common.player.playerType != black))
 	s.WriteString("\n\n")
 	
-	if m.common.gameState.lobby.game.WhiteTurn() {
+	if m.common.player.lob.game.WhiteTurn() {
 		s.WriteString("White to move\n")
 	} else {
 		s.WriteString("Black to Move\n")

@@ -12,8 +12,8 @@ import (
 )
 type lobby struct {
 	id string
-	p1 *player
-	p2 *player
+	p1 *player // white
+	p2 *player // black
 	specs []*player
 	game *Game.Game
 	done chan string
@@ -32,7 +32,7 @@ func NewLobby(done chan string) (*lobby, string) {
 	return &l, id
 }
 
-func (l *lobby) AddPlayer(s ssh.Session) {
+func (l *lobby) AddPlayer(s ssh.Session) *player { // return 0 if white, 1 if black, 2 if spectator
 	name := "Anonymous"
 	if s.User() != "" {
 		name = s.User()
@@ -44,10 +44,16 @@ func (l *lobby) AddPlayer(s ssh.Session) {
 	
 	if l.p1 == nil {
 		l.p1 = &p
+		p.playerType = white
+		return &p
 	} else if l.p2 == nil {
 		l.p2 = &p
+		p.playerType = black
+		return &p
 	} else {
 		l.specs = append(l.specs, &p)
+		p.playerType = spec
+		return &p
 	}
 }
 

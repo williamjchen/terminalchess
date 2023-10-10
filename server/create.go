@@ -6,13 +6,11 @@ import (
 
 type createModel struct {
 	common *commonModel
-	gs *gameState
 }
 
-func NewCreateModel(com *commonModel, gs *gameState) createModel {
+func NewCreateModel(com *commonModel) createModel {
 	c := createModel{
 		common: com,
-		gs: gs,
 	}
 
 	return c
@@ -34,7 +32,7 @@ func (m createModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg == nil {
 			return m, nil
 		} else {
-			m.gs.lobby = msg
+			m.common.player.lob = msg
 			return m, nil
 		}
 

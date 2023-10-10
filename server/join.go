@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -11,12 +12,11 @@ type joinModel struct {
 	common *commonModel
 	idInput textinput.Model
 	tried bool
-	gs *gameState
 }
 
 type lobMsg *lobby
 
-func NewJoinModel(com *commonModel, gs *gameState) joinModel {
+func NewJoinModel(com *commonModel) joinModel {
 	ii := textinput.New()
 	ii.Placeholder = "XXXXXX"
 	ii.CharLimit = 6
@@ -26,7 +26,6 @@ func NewJoinModel(com *commonModel, gs *gameState) joinModel {
 		common: com,
 		idInput: ii,
 		tried: false,
-		gs: gs,
 	}
 
 	return j
@@ -56,16 +55,17 @@ func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, getLobby(s, m.common.srv)
 		default:
 			var cmd tea.Cmd
+			slog.Info("blink")
 			m.idInput, cmd = m.idInput.Update(msg)
-			return m, cmd
+			return m, tea.Batch(textinput.Blink, cmd)
 		} // switch KeyMsg
-		
+
 	case lobMsg:
 		if msg == nil {
 			m.tried = true
 			return m, nil
 		} else {
-			m.gs.lobby = msg
+			m.common.player.lob = msg
 			return m, nil
 		}
 

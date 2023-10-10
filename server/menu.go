@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -37,11 +38,12 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.common.choice {
 			case m.common.choices[0]: // stockfish
 				l := m.common.srv.mng.CreateLobby()
-				m.common.gameState.lobby = l
+				m.common.player.lob = l
 				return m, nil
 			case m.common.choices[2]: // create
 				l := m.common.srv.mng.CreateLobby()
-				m.common.gameState.lobby = l
+				slog.Info("id", l.id)
+				m.common.player.lob = l
 				return m, nil
 			default:
 				return m, nil

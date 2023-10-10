@@ -3,7 +3,6 @@ package server
 import (
 	"log/slog"
 
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
     "github.com/charmbracelet/ssh"
 )
@@ -25,7 +24,7 @@ type commonModel struct {
 	chosen bool
 	begin bool
 	srv *Server
-	gameState *gameState
+	player *player
 }
 type parentModel struct {
 	state state
@@ -48,17 +47,13 @@ func GetModelOption(s ssh.Session, options []string, server *Server) {
 }
 
 func Model(options []string, server *Server) parentModel {
-	gs := gameState{
-		lobby: nil,
-	}
-
 	common := commonModel {
 		choices: options,
 		choice: "",
 		chosen: false,
 		begin: false,
 		srv: server,
-		gameState: &gs,
+		player: NewPlayer(),
 	}
 
 	p := parentModel{
@@ -71,7 +66,7 @@ func Model(options []string, server *Server) parentModel {
 }
 
 func (m parentModel) Init() tea.Cmd {
-    return tea.Batch(tea.EnterAltScreen, m.game.spinner.spinner.Tick, textinput.Blink)
+	return tea.EnterAltScreen
 }
 
 func (m parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

@@ -49,7 +49,7 @@ func NewBoard() *board {
 }
 
 func (b *board) move() {
-	
+
 }
 
 func (b *board) buildBorderRow(row int) string {
@@ -114,7 +114,7 @@ func (b *board) buildPaddingRow(row int) string {
 	return s.String()
 }
 
-func (b *board) PrintBoard() string{
+func (b *board) PrintBoard(flipped bool) string{ // flipped = false is white at bottom
 	s := strings.Builder{}
 	for i := 0; i < 8; i++ {
 		s.WriteString(b.buildBorderRow(i))
