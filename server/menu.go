@@ -43,7 +43,10 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case m.common.choices[2]: // create
 				l := m.common.srv.mng.CreateLobby()
 				slog.Info("Create lobby", "id:", l.id)
+
+				l.AddPlayer(m.common.sess, m.common.player)
 				m.common.player.lob = l
+				m.common.player.lob.game.SetFlipped(m.common.player.playerType != black)
 				return m, nil
 			default:
 				return m, nil

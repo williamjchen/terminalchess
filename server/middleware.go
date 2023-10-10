@@ -14,7 +14,7 @@ func tui(server *Server) wish.Middleware {
 			slog.Info("middlware")
 		
 			options := []string{"Stockfish", "Join Room", "Create Room"}
-			GetModelOption(s, options, server)
+			GetModelOption(s, options, server, s)
 
 			sh(s)
 		}

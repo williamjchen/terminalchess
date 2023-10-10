@@ -89,7 +89,7 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 func gameView(m gameModel) string {
 	s := strings.Builder{}
 
-	s.WriteString(m.common.player.lob.game.PrintBoard(m.common.player.playerType != black))
+	s.WriteString(m.common.player.lob.game.PrintBoard())
 	s.WriteString("\n\n")
 	
 	if m.common.player.lob.game.WhiteTurn() {

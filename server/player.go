@@ -3,9 +3,9 @@ package server
 type playerType int
 
 const (
-	white playerType = iota
-	black 
-	spec
+	white playerType = iota // 0
+	black // 1
+	spec // 2
 )
 type player struct {
 	name string

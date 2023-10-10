@@ -6,6 +6,7 @@ import (
 )
 
 type board struct {
+	flipped bool
 	pieces_unicode map[string] string
 	upT, cross, botT, leftT, rightT, leftBotEnd, rightBotEnd, rightUpEnd, leftUpEnd, horiz, vert string
 	padding int
@@ -44,6 +45,8 @@ func NewBoard() *board {
 	b.padding = 1
 
 	b.pos = NewPosition("")
+
+	b.flipped = false
 
 	return &b
 }
@@ -114,7 +117,7 @@ func (b *board) buildPaddingRow(row int) string {
 	return s.String()
 }
 
-func (b *board) PrintBoard(flipped bool) string { // flipped = false is white at bottom
+func (b *board) PrintBoard() string { // flipped = false is white at bottom
 	s := strings.Builder{}
 	for i := 0; i < 8; i++ {
 		s.WriteString(b.buildBorderRow(i))
@@ -139,4 +142,8 @@ func (b *board) PrintBoard(flipped bool) string { // flipped = false is white at
 
 	s.WriteString(labels.String())
 	return s.String()
+}
+
+func (b * board) SetFlipped(flipped bool) {
+	b.flipped = flipped
 }

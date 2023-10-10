@@ -65,7 +65,12 @@ func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.tried = true
 			return m, nil
 		} else {
-			m.common.player.lob = msg
+			var l *lobby = msg
+
+			l.AddPlayer(m.common.sess, m.common.player)
+			m.common.player.lob = l
+			m.common.player.lob.game.SetFlipped(m.common.player.playerType != black)
+
 			return m, nil
 		}
 

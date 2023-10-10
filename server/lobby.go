@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -32,29 +33,24 @@ func NewLobby(done chan string) (*lobby, string) {
 	return &l, id
 }
 
-func (l *lobby) AddPlayer(s ssh.Session) *player { // return 0 if white, 1 if black, 2 if spectator
-	name := "Anonymous"
+func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if black, 2 if spectator
 	if s.User() != "" {
-		name = s.User()
-	}
-
-	p := player{
-		name: name,
+		p.name = s.User()
 	}
 	
 	if l.p1 == nil {
-		l.p1 = &p
+		l.p1 = p
 		p.playerType = white
-		return &p
 	} else if l.p2 == nil {
-		l.p2 = &p
+		l.p2 = p
 		p.playerType = black
-		return &p
 	} else {
-		l.specs = append(l.specs, &p)
+		l.specs = append(l.specs, p)
 		p.playerType = spec
-		return &p
 	}
+
+	slog.Info("Player added", "lobby id:", l.id, "type:", p.playerType, "name:", p.name)
+
 }
 
 func randId(length int) string {
