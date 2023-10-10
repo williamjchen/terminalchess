@@ -15,8 +15,8 @@ type gameModel struct {
 	stockfish stockfishModel
 	join joinModel
 	create createModel
+	spinner spinnerModel
 	textinput textinput.Model
-    gameState *gameState
 }
 
 func NewGame(com *commonModel) gameModel {
@@ -25,40 +25,30 @@ func NewGame(com *commonModel) gameModel {
 	ti.CharLimit = 5
 	ti.Width = 20
 
-	gs := gameState{}
-
 	g := gameModel{
 		common: com,
-		stockfish: NewStockfishModel(com, &gs),
-		join: NewJoinModel(com, &gs),
-		create: NewCreateModel(com, &gs),
+		stockfish: NewStockfishModel(com, com.gameState),
+		join: NewJoinModel(com, com.gameState),
+		create: NewCreateModel(com, com.gameState),
+		spinner: NewSpinner(),
 		textinput: ti,
-		gameState: &gs,
 	}
 	return g
 }
 
 func (m gameModel) Init() tea.Cmd {
-	return nil
+	return m.spinner.Init()
 }
 
 func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.common.begin {
+	if m.common.gameState.lobby != nil {
 		return gameUpdate(msg, m)
 	}
 
 	switch m.common.choice {
-	case m.common.choices[0]: // stockfish
-		s, cmd := m.stockfish.Update(msg)
-		m.stockfish = s.(stockfishModel)
-		return m, cmd
 	case m.common.choices[1]: // join
 		j, cmd := m.join.Update(msg)
 		m.join = j.(joinModel)
-		return m, cmd
-	case m.common.choices[2]: // create
-		c, cmd := m.create.Update(msg)
-		m.create = c.(createModel)
 		return m, cmd
 	default:
 		return m, nil
@@ -66,17 +56,13 @@ func (m gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m gameModel) View() string {
-	if m.common.begin {
+	if m.common.gameState.lobby != nil {
 		return gameView(m)
 	}
 
 	switch m.common.choice {
-	case m.common.choices[0]: // stockfish
-		return m.stockfish.View()
 	case m.common.choices[1]: // join
 		return m.join.View()
-	case m.common.choices[2]: // create
-		return m.create.View()
 	default:
 		return ""
 	}
@@ -106,10 +92,10 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 func gameView(m gameModel) string {
 	s := strings.Builder{}
 
-	s.WriteString(m.gameState.lobby.game.PrintBoard())
+	s.WriteString(m.common.gameState.lobby.game.PrintBoard())
 	s.WriteString("\n\n")
 	
-	if m.gameState.lobby.game.WhiteTurn() {
+	if m.common.gameState.lobby.game.WhiteTurn() {
 		s.WriteString("White to move\n")
 	} else {
 		s.WriteString("Black to Move\n")

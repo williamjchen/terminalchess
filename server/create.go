@@ -23,12 +23,25 @@ func (m createModel) Init() tea.Cmd{
 }
 
 func (m createModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok {
-		k := msg.String()
-		if k == "esc" || k == "ctrl+c" {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String(){
+		case "esc", "ctrl+c":
 			return m, tea.Quit
+		} // switch KeyMsg
+		
+	case lobMsg:
+		if msg == nil {
+			return m, nil
+		} else {
+			m.gs.lobby = msg
+			return m, nil
 		}
-	}
+
+	case errMsg:
+		return m, nil
+
+	} // switch msg
 	return m, nil
 }
 

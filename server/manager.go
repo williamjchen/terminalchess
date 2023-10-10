@@ -6,7 +6,7 @@ type manager struct {
 
 func NewManager() *manager{
 	m := manager{
-
+		lobs: make(map[string]*lobby),
 	}
 	return &m
 }

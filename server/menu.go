@@ -32,8 +32,20 @@ func (m menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			// Send the choice on the channel and exit.
 			m.common.choice = m.common.choices[m.cursor]
-			m.common.chosen = true	
-			return m, nil
+			m.common.chosen = true
+
+			switch m.common.choice {
+			case m.common.choices[0]: // stockfish
+				l := m.common.srv.mng.CreateLobby()
+				m.common.gameState.lobby = l
+				return m, nil
+			case m.common.choices[2]: // create
+				l := m.common.srv.mng.CreateLobby()
+				m.common.gameState.lobby = l
+				return m, nil
+			default:
+				return m, nil
+			}
 
 		case "down", "j":
 			m.cursor++
