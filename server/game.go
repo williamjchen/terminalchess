@@ -7,13 +7,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type gameState struct {
+	lobby *lobby
+}
 type gameModel struct {
 	common *commonModel
 	stockfish stockfishModel
 	join joinModel
 	create createModel
 	textinput textinput.Model
-    lobby *lobby
+    gameState *gameState
 }
 
 func NewGame(com *commonModel) gameModel {
@@ -22,16 +25,15 @@ func NewGame(com *commonModel) gameModel {
 	ti.CharLimit = 5
 	ti.Width = 20
 
-	t := make(chan string)
-	l, _ := NewLobby(t)
+	gs := gameState{}
 
 	g := gameModel{
 		common: com,
-		stockfish: NewStockfishModel(com),
-		join: NewJoinModel(com),
-		create: NewCreateModel(com),
+		stockfish: NewStockfishModel(com, &gs),
+		join: NewJoinModel(com, &gs),
+		create: NewCreateModel(com, &gs),
 		textinput: ti,
-		lobby: l,
+		gameState: &gs,
 	}
 	return g
 }
@@ -104,10 +106,10 @@ func gameUpdate(msg tea.Msg, m gameModel) (tea.Model, tea.Cmd) {
 func gameView(m gameModel) string {
 	s := strings.Builder{}
 
-	s.WriteString(m.lobby.game.PrintBoard())
+	s.WriteString(m.gameState.lobby.game.PrintBoard())
 	s.WriteString("\n\n")
 	
-	if m.lobby.game.WhiteTurn() {
+	if m.gameState.lobby.game.WhiteTurn() {
 		s.WriteString("White to move\n")
 	} else {
 		s.WriteString("Black to Move\n")

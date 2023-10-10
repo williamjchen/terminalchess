@@ -10,9 +10,13 @@ import (
 type joinModel struct {
 	common *commonModel
 	idInput textinput.Model
+	tried bool
+	gs *gameState
 }
 
-func NewJoinModel(com *commonModel) joinModel {
+type lobMsg *lobby
+
+func NewJoinModel(com *commonModel, gs *gameState) joinModel {
 	ii := textinput.New()
 	ii.Placeholder = "XXXXXX"
 	ii.CharLimit = 6
@@ -21,9 +25,18 @@ func NewJoinModel(com *commonModel) joinModel {
 	j := joinModel {
 		common: com,
 		idInput: ii,
+		tried: false,
+		gs: gs,
 	}
 
 	return j
+}
+
+func getLobby(id string, srv *Server) tea.Cmd {
+	return func() tea.Msg {
+		l := srv.mng.FindLobby(id)
+		return lobMsg(l)
+	}
 }
 
 func (m joinModel) Init() tea.Cmd {
@@ -31,37 +44,44 @@ func (m joinModel) Init() tea.Cmd {
 }
 
 func (m joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok {
-		k := msg.String()
-		if k == "esc" || k == "ctrl+c" {
-			return m, tea.Quit
-		}
-	}
-
 	m.idInput.Focus()
-
-	var cmd tea.Cmd
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
-			m.common.begin = true
+		switch msg.String(){
+		case "esc", "ctrl+c":
+			return m, tea.Quit
+		case "enter":
+			s := m.idInput.Value()
 			m.idInput.Reset()
+			return m, getLobby(s, m.common.srv)
+		default:
+			var cmd tea.Cmd
+			m.idInput, cmd = m.idInput.Update(msg)
 			return m, cmd
+		} // switch KeyMsg
+		
+	case lobMsg:
+		if msg == nil {
+			m.tried = true
+			return m, nil
+		} else {
+			m.gs.lobby = msg
+			return m, nil
 		}
 
 	case errMsg:
 		return m, nil
-	}
 
-	m.idInput, cmd = m.idInput.Update(msg)
-	return m, cmd
+	} // switch msg
+	return m, nil
 }
 
 func (m joinModel) View() string {
 	s := strings.Builder{}
 	s.WriteString("Enter Room Code...\n")
 	s.WriteString(m.idInput.View())
+	if m.tried {
+		s.WriteString("\nInvalid! Try again or create your own room!")
+	}
 	return s.String()
 }

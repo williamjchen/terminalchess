@@ -6,11 +6,13 @@ import (
 
 type createModel struct {
 	common *commonModel
+	gs *gameState
 }
 
-func NewCreateModel(com *commonModel) createModel {
+func NewCreateModel(com *commonModel, gs *gameState) createModel {
 	c := createModel{
 		common: com,
+		gs: gs,
 	}
 
 	return c

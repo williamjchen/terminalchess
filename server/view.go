@@ -23,6 +23,7 @@ type commonModel struct {
     choice string
 	chosen bool
 	begin bool
+	srv *Server
 }
 type parentModel struct {
 	state state
@@ -31,9 +32,9 @@ type parentModel struct {
 	game gameModel
 }
 
-func GetModelOption(s ssh.Session, options []string) {
+func GetModelOption(s ssh.Session, options []string, server *Server) {
     p := tea.NewProgram(
-        Model(options),
+        Model(options, server),
         tea.WithInput(s),
         tea.WithOutput(s),
     )
@@ -44,12 +45,13 @@ func GetModelOption(s ssh.Session, options []string) {
     }
 }
 
-func Model(options []string) parentModel {
+func Model(options []string, server *Server) parentModel {
 	common := commonModel {
 		choices: options,
 		choice: "",
 		chosen: false,
 		begin: false,
+		srv: server,
 	}
 
 	p := parentModel{

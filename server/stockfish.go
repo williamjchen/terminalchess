@@ -6,11 +6,13 @@ import (
 
 type stockfishModel struct {
 	common *commonModel
+	gs *gameState
 }
 
-func NewStockfishModel(com *commonModel) stockfishModel {
+func NewStockfishModel(com *commonModel, gs *gameState) stockfishModel {
 	s := stockfishModel {
 		common: com,
+		gs: gs,
 	}
 	return s
 }
