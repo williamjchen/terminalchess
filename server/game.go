@@ -10,7 +10,7 @@ import (
 
 type chessMsg bool
 type updateMsg struct{}
-type finishMsg struct{}
+type finishMsg int // 0 white, 1 black, 2 stalemate
 
 type gameModel struct {
 	common *commonModel

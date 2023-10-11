@@ -51,6 +51,11 @@ func (m *infoModel) View(flipped bool) string {
 	var whiteName, blackName, code string = "None", "Nil", "None"
 	var statusMessage string = ""
 
+	green := lipgloss.NewStyle().Foreground(lipgloss.Color("154"))
+	red := lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	whiteKing := "♚"
+	blackKing := "♔"
+
 	if m.common.player.lob.p1 != nil {
 		whiteName = m.common.player.lob.p1.name
 	}
@@ -61,11 +66,20 @@ func (m *infoModel) View(flipped bool) string {
 		code = m.common.player.lob.id
 	}
 
-	whiteKing := "♚"
-	blackKing := "♔"
+	var bullet string
+	if m.common.player.lob.p1Pres {
+		bullet = "•"
+	} else {
+		bullet = "◦"
+	}
+	whiteName = fmt.Sprintf("%s %s %s", bullet, whiteKing, whiteName)
 
-	whiteName = fmt.Sprintf("%s %s", whiteKing, whiteName)
-	blackName = fmt.Sprintf("%s %s", blackKing, blackName)
+	if m.common.player.lob.p2Pres {
+		bullet = "•"
+	} else {
+		bullet = "◦"
+	}
+	blackName = fmt.Sprintf("%s %s %s", bullet, blackKing, blackName)
 
 	if flipped {
 		if m.common.player.lob.game.WhiteTurn() {
@@ -90,9 +104,9 @@ func (m *infoModel) View(flipped bool) string {
 
 	var col lipgloss.Style
 	if m.common.player.playerType == white && m.common.player.lob.status == whiteWin ||  m.common.player.playerType == black && m.common.player.lob.status == blackWin {
-		col = lipgloss.NewStyle().Foreground(lipgloss.Color("154"))
+		col = green
 	} else if m.common.player.playerType == white && m.common.player.lob.status == blackWin || m.common.player.playerType == black && m.common.player.lob.status == whiteWin {
-		col = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+		col = red
 	} else {
 		col = lipgloss.NewStyle().Foreground(lipgloss.Color("254"))
 	}
@@ -113,7 +127,7 @@ func (m *infoModel) View(flipped bool) string {
 			"%s\n\n%s\n\n%s",
 			m.table.String(),
 			statusMessage,
-			lipgloss.NewStyle().Faint(true).Render("ctrl+c / esc to exit\nctrl+f to flip board"),
+			lipgloss.NewStyle().Faint(true).Render("ctrl+c / esc to exit\nctrl+f to flip board\nctrl+n to return to menu"),
 		),
 	)
 }
