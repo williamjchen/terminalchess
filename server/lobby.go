@@ -70,7 +70,7 @@ func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if
 	} else if l.p2 == nil {
 		l.p2 = p
 		p.playerType = black
-		l.p1Pres = true
+		l.p2Pres = true
 	} else {
 		l.specs = append(l.specs, p)
 		p.playerType = spec
@@ -83,17 +83,17 @@ func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if
 func (l *lobby) RemovePlayer(p *player) {
 	if l.p1 == p {
 		slog.Info("Remove player 1", "id", l.id)
-		l.p1 = nil
-		l.p1Pres = true
+		l.p1Pres = false
 		l.status = blackWin
 		l.SendMsg(p, finishMsg(1))
+		l.p1 = nil
 		l.SendMsgToSpectators(finishMsg(1))
 	} else if l.p2 == p {
 		slog.Info("Remove player 2", "id", l.id)
-		l.p2 = nil
-		l.p2Pres = true
+		l.p2Pres = false
 		l.status = whiteWin
 		l.SendMsg(p, finishMsg(0))
+		l.p2 = nil
 		l.SendMsgToSpectators(finishMsg(0))
 	} else {
 		length := len(l.specs)
@@ -111,9 +111,9 @@ func (l *lobby) RemovePlayer(p *player) {
 }
 
 func (l *lobby) SendMsg(p *player, msg interface{}) { // sends message to other player that's not the argument
-	if l.p1 != nil && l.p1 == p {
+	if l.p2 != nil && l.p1 == p {
 		l.p2.common.program.Send(msg)
-	} else if l.p1 != nil {
+	} else if l.p1 != nil && l.p2 == p {
 		l.p1.common.program.Send(msg)
 	}
 	l.SendMsgToSpectators(msg)
