@@ -11,8 +11,8 @@ func NewGame() *Game{
 	return &g
 }
 
-func (g *Game) WhiteTurn() bool {
-	return g.board.pos.whiteTurn
+func (g *Game) Turn() turn {
+	return g.board.pos.turn
 }
 
 func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at bottom
@@ -25,8 +25,4 @@ func (g *Game) WhiteMove(cmd string) bool {
 
 func (g *Game) BlackMove(cmd string) bool {
 	return true
-}
-
-func (g *Game) whiteTurn() bool {
-	return g.board.pos.whiteTurn
 }

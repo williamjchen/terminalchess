@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 
+	Game "github.com/williamjchen/terminalchess/game"	
+
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -82,7 +84,7 @@ func (m *infoModel) View(flipped bool) string {
 	blackName = fmt.Sprintf("%s %s %s", bullet, blackKing, blackName)
 
 	if flipped {
-		if m.common.player.lob.game.WhiteTurn() {
+		if m.common.player.lob.game.Turn() == Game.WhiteTurn {
 			m.turnRow = 1
 		} else {
 			m.turnRow = 3
@@ -90,7 +92,7 @@ func (m *infoModel) View(flipped bool) string {
 	
 		rows = [][]string{[]string{whiteName}, []string{fmt.Sprintf("Code: %s", code)}, []string{blackName}}
 	} else {
-		if m.common.player.lob.game.WhiteTurn() {
+		if m.common.player.lob.game.Turn() == Game.WhiteTurn {
 			m.turnRow = 3
 		} else {
 			m.turnRow = 1

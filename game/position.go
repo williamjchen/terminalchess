@@ -7,6 +7,13 @@ import (
 	"unicode"
 )
 
+type turn int
+
+const (
+	WhiteTurn turn = iota
+	BlackTurn
+)
+
 type position struct {
 	// bitboard layout
     // 63 62 61	60 59 58 57	56
@@ -24,8 +31,8 @@ type position struct {
     // black pawn - 9, black knight  - 10, black bishop - 11, black rook - 12, black queen - 13, black king - 14
     pieceToChar string
 
-	whiteTurn bool// 0 = white, 1 = black
-    castleRights int // 0 = no rights, 1 = white king, 2 = white queen, 4 = black king, 8 = black queen, 15 = all
+	turn turn
+	castleRights int // 0 = no rights, 1 = white king, 2 = white queen, 4 = black king, 8 = black queen, 15 = all
     halfMoveClock int
     fullMoveNumber int
     enPassant uint64 // en passant square
@@ -35,7 +42,7 @@ func NewPosition(fen string) *position {
 	p := position{}
 
 	p.pieceToChar = " PNBRQK  pnbrqk"
-	p.whiteTurn = true
+	p.turn = WhiteTurn
 	p.castleRights = 0
 	p.enPassant = 0
 	p.loadPosition(fen)
@@ -110,9 +117,9 @@ func (p *position)loadPosition(fen string) error {
 
 	// 2. load active colour
 	if rune(parts[1][0]) == 'w' {
-		p.whiteTurn = true
+		p.turn = WhiteTurn
 	} else {
-		p.whiteTurn = false
+		p.turn = BlackTurn
 	}
 
 	// 3. load castling availability

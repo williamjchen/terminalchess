@@ -110,6 +110,15 @@ func (l *lobby) RemovePlayer(p *player) {
 	}
 }
 
+func (l *lobby) sendMove(move string, p *player) bool {
+	if p != l.p1 && p != l.p2 {
+		return false
+	}
+
+	status := p.Move(move)
+	return status
+}
+
 func (l *lobby) SendMsg(p *player, msg interface{}) { // sends message to other player that's not the argument
 	if l.p2 != nil && l.p1 == p {
 		l.p2.common.program.Send(msg)

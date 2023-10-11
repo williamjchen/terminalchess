@@ -3,6 +3,7 @@ package server
 import (
 	"strings"
 
+	Game "github.com/williamjchen/terminalchess/game"	
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -42,9 +43,9 @@ func NewGame(com *commonModel) *gameModel {
 	return &g
 }
 
-func sendMove(move string) tea.Cmd {
+func sendMove(move string, m *gameModel) tea.Cmd {
 	return func() tea.Msg {
-		status := false
+		status := m.common.player.lob.sendMove(move, m.common.player)
 		return chessMsg(status)
 	}
 }
@@ -68,7 +69,7 @@ func (m *gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m gameModel) View() string {
+func (m *gameModel) View() string {
 	if m.common.player.lob != nil {
 		return gameView(m)
 	}
@@ -91,7 +92,7 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "enter":
 			m.textinput.Reset()
-			return m, sendMove("")
+			return m, sendMove("", m)
 		case "ctrl+f":
 			m.common.player.Flip()
 			return m, cmd
@@ -111,13 +112,13 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func gameView(m gameModel) string {
+func gameView(m *gameModel) string {
 	s := strings.Builder{}
 
 	s.WriteString(m.common.player.lob.game.PrintBoard(m.common.player.flipped))
 	s.WriteString("\n\n")
 	
-	if m.common.player.lob.game.WhiteTurn() {
+	if m.common.player.lob.game.Turn() == Game.WhiteTurn {
 		s.WriteString("White to move\n")
 	} else {
 		s.WriteString("Black to Move\n")
