@@ -2,10 +2,6 @@ package server
 
 import (
 	"log/slog"
-	"crypto/rand"
-	"fmt"
-	"math/big"
-	"math"
 
 	Game "github.com/williamjchen/terminalchess/game"	
 
@@ -20,8 +16,7 @@ type lobby struct {
 	done chan string
 }
 
-func NewLobby(done chan string) (*lobby, string) {
-	id := randId(6)
+func NewLobby(done chan string, id string) *lobby {
 	g := Game.NewGame()
 	l := lobby{
 		id: id,
@@ -30,7 +25,7 @@ func NewLobby(done chan string) (*lobby, string) {
 		game: g,
 		done: done,
 	}
-	return &l, id
+	return &l
 }
 
 func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if black, 2 if spectator
@@ -66,16 +61,4 @@ func (l *lobby) SendMsgToSpectators(msg struct{}) {
 	for _, p := range l.specs {
 		p.common.program.Send(msg)
 	}
-}
-
-func randId(length int) string {
-	// https://stackoverflow.com/a/75518426/7361588
-	bi, err := rand.Int(
-        rand.Reader,
-        big.NewInt(int64(math.Pow(10, float64(length)))),
-    )
-    if err != nil {
-        panic(err)
-    }
-    return fmt.Sprintf("%0*d", length, bi)
 }
