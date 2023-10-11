@@ -114,8 +114,12 @@ func (l *lobby) sendMove(move string, p *player) bool {
 	if p != l.p1 && p != l.p2 {
 		return false
 	}
+	if p.lob.status != inProgres {
+		return false
+	}
 
 	status := p.Move(move)
+	l.SendMsg(p, updateMsg{})
 	return status
 }
 

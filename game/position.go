@@ -81,7 +81,11 @@ func (p *position)validateMove() {
 }
 
 func (p *position)move() {
-
+	if p.turn == WhiteTurn {
+		p.turn = BlackTurn
+	} else {
+		p.turn = WhiteTurn
+	}
 }
 
 func (p *position)loadPosition(fen string) error {

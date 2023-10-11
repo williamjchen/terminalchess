@@ -19,10 +19,12 @@ func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at b
 	return g.board.PrintBoard(flipped)
 }
 
-func (g *Game) WhiteMove(cmd string) bool {
+func (g *Game) WhiteMove(move string) bool {
+	g.board.move()
 	return true
 }
 
-func (g *Game) BlackMove(cmd string) bool {
+func (g *Game) BlackMove(move string) bool {
+	g.board.move()
 	return true
 }

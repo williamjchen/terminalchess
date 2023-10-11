@@ -50,7 +50,7 @@ func NewBoard() *board {
 }
 
 func (b *board) move() {
-
+	b.pos.move()
 }
 
 func (b *board) buildBorderRow(row int) string {

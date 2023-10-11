@@ -1,5 +1,9 @@
 package server
 
+import (
+	Game "github.com/williamjchen/terminalchess/game"
+)
+
 type playerType int
 
 const (
@@ -27,8 +31,14 @@ func NewPlayer(com *commonModel) *player {
 
 func (p *player) Move(cmd string) bool {
 	if (p.playerType == white) {
+		if p.lob.game.Turn() == Game.BlackTurn {
+			return false
+		}
 		return p.lob.game.WhiteMove(cmd)
 	} else if (p.playerType == black) {
+		if p.lob.game.Turn() == Game.WhiteTurn {
+			return false
+		}
 		return p.lob.game.BlackMove(cmd)
 	}
 	return false
