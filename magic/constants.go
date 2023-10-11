@@ -35,11 +35,11 @@ import (
 type Square uint8
 
 func Init() {
-	magicMovesRook = make([][]uint64, 64, 64)
-	magicMovesBishop = make([][]uint64, 64, 64)
+	MagicMovesRook = make([][]uint64, 64, 64)
+	MagicMovesBishop = make([][]uint64, 64, 64)
 	for i := 0; i < 64; i++ {
-		magicMovesRook[i] = make([]uint64, magicDbSizeRook[i], magicDbSizeRook[i]) // 2^n possible blocker permutations
-		magicMovesBishop[i] = make([]uint64, magicDbSizeBishop[i], magicDbSizeBishop[i]) // 2^n possible blocker permuations
+		MagicMovesRook[i] = make([]uint64, magicDbSizeRook[i], magicDbSizeRook[i]) // 2^n possible blocker permutations
+		MagicMovesBishop[i] = make([]uint64, magicDbSizeBishop[i], magicDbSizeBishop[i]) // 2^n possible blocker permuations
 	}
 	generateRookMagicTable()
 	generateBishopMagicTable()
@@ -65,7 +65,7 @@ func generateBishopMagicTable() {
 func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur uint64) {
 	if blockerMask == 0 {
 		magicIndex := (cur >> magicNumberRook[origin]) >> magicRookShifts[origin] // (blockers * magic) >> (64 - index_bits)
-		magicMovesRook[origin][magicIndex] = rookMoves(origin, cur)
+		MagicMovesRook[origin][magicIndex] = rookMoves(origin, cur)
 	}
 
 	generateRookBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | 1 << bits.TrailingZeros64(blockerMask)) // with
@@ -75,7 +75,7 @@ func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur
 func generateBishopBlockerBoardPermutations(origin Square, blockerMask uint64, cur uint64) {
 	if blockerMask == 0 {
 		magicIndex := (cur >> magicNumberBishop[origin]) >> magicBishopShifts[origin] // (blockers * magic) >> (64 - index_bits)
-		magicMovesBishop[origin][magicIndex] = bishopMoves(origin, cur)
+		MagicMovesBishop[origin][magicIndex] = bishopMoves(origin, cur)
 	}
 
 	generateBishopBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | 1 << bits.TrailingZeros64(blockerMask)) // with
@@ -189,20 +189,20 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 // Below are precalculated magic numbers from: https://github.com/dylhunn/dragontoothmg/blob/master/constants.go
 
 // Bitboard where every bit is active
-var everything uint64 = ^(uint64(0))
+var Everything uint64 = ^(uint64(0))
 
 // Only activate one file, A-H (A=0, H=7)
-var onlyFile = [8]uint64{
+var OnlyFile = [8]uint64{
 	0x0101010101010101, 0x0202020202020202, 0x0404040404040404, 0x0808080808080808,
 	0x1010101010101010, 0x2020202020202020, 0x4040404040404040, 0x8080808080808080}
 
-var onlyRank = [8]uint64{
+var OnlyRank = [8]uint64{
 	0xFF, 0XFF00, 0XFF0000, 0XFF000000,
 	0XFF00000000, 0XFF0000000000, 0XFF000000000000, 0XFF00000000000000}
 
 // Masks for attacks
 // In order: knight on A1, B1, C1, ... F8, G8, H8
-var knightMasks = [64]uint64{
+var KnightMasks = [64]uint64{
 	0x0000000000020400, 0x0000000000050800, 0x00000000000a1100, 0x0000000000142200,
 	0x0000000000284400, 0x0000000000508800, 0x0000000000a01000, 0x0000000000402000,
 	0x0000000002040004, 0x0000000005080008, 0x000000000a110011, 0x0000000014220022,
@@ -220,7 +220,7 @@ var knightMasks = [64]uint64{
 	0x0004020000000000, 0x0008050000000000, 0x00110a0000000000, 0x0022140000000000,
 	0x0044280000000000, 0x0088500000000000, 0x0010a00000000000, 0x0020400000000000}
 
-var kingMasks = [64]uint64{
+var KingMasks = [64]uint64{
 	0x0000000000000302, 0x0000000000000705, 0x0000000000000e0a, 0x0000000000001c14,
 	0x0000000000003828, 0x0000000000007050, 0x000000000000e0a0, 0x000000000000c040,
 	0x0000000000030203, 0x0000000000070507, 0x00000000000e0a0e, 0x00000000001c141c,
@@ -355,5 +355,5 @@ var magicDbSizeBishop = [64]uint64{
 	32, 32, 32, 32, 32, 32, 32, 32, 64, 32, 32, 32, 32, 32, 32, 64}
 
 // The actual magic moves database, populated by init
-var magicMovesRook [][]uint64
-var magicMovesBishop [][]uint64
+var MagicMovesRook [][]uint64
+var MagicMovesBishop [][]uint64

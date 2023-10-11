@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/williamjchen/terminalchess/magic"
 	"fmt"
 	"os"
 	"errors"
@@ -9,6 +10,8 @@ import (
 	"time"
 	"os/signal"
 	"syscall"
+
+	"github.com/williamjchen/terminalchess/magic"
 
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/ssh"
@@ -40,6 +43,8 @@ func NewServer(path, host string, port int) (*Server, error){
 		return nil, err
 	}
 	server.srv = s
+
+	magic.Init() // want to initalize magic bitboadrs once
 
 	return &server, nil
 }
