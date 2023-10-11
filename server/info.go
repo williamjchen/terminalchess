@@ -49,6 +49,7 @@ func NewInfoModel(com *commonModel) *infoModel {
 func (m *infoModel) View(flipped bool) string {
 	var rows [][]string
 	var whiteName, blackName, code string = "None", "Nil", "None"
+	var statusMessage string = ""
 
 	if m.common.player.lob.p1 != nil {
 		whiteName = m.common.player.lob.p1.name
@@ -87,10 +88,32 @@ func (m *infoModel) View(flipped bool) string {
 	data := table.NewStringData(rows...)
 	m.table.Data(data)
 
+	var col lipgloss.Style
+	if m.common.player.playerType == white && m.common.player.lob.status == whiteWin ||  m.common.player.playerType == black && m.common.player.lob.status == blackWin {
+		col = lipgloss.NewStyle().Foreground(lipgloss.Color("154"))
+	} else if m.common.player.playerType == white && m.common.player.lob.status == blackWin || m.common.player.playerType == black && m.common.player.lob.status == whiteWin {
+		col = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	} else {
+		col = lipgloss.NewStyle().Foreground(lipgloss.Color("254"))
+	}
+
+	switch m.common.player.lob.status {
+	case inProgres:
+		statusMessage = ""
+	case whiteWin:
+		statusMessage = col.Render("White Win")
+	case blackWin:
+		statusMessage = col.Render("Black Win")
+	case stalemate:
+		statusMessage = col.Render("Stalemate")
+	}
+
 	return m.style.Render(
-		lipgloss.JoinVertical(
-			lipgloss.Left,
-			m.table.String() + "\n\n\n" + lipgloss.NewStyle().Faint(true).Render("ctrl+c / esc to exit\nctrl+f to flip board"),
+		fmt.Sprintf(
+			"%s\n\n%s\n\n%s",
+			m.table.String(),
+			statusMessage,
+			lipgloss.NewStyle().Faint(true).Render("ctrl+c / esc to exit\nctrl+f to flip board"),
 		),
 	)
 }
