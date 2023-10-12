@@ -365,7 +365,6 @@ func (p *position) kingPushes(dest uint64) []move{
 		p.colourBB[1] &= ^temp
 	}
 
-
 	targets := magic.KingMasks[kingSquare]
 	for targets != 0 {
 		target := bits.TrailingZeros64(targets)
@@ -403,7 +402,15 @@ func (p *position) pawnCaptures(allowed, dest uint64) []move{
 }
 
 func (p *position) knightMoves(allowed, dest uint64) []move{
-	return []move{}
+	moves := []move{}
+	knights := p.knightPos & allowed
+	for knights != 0 {
+		knight := bits.TrailingZeros64(knights)
+		knights &= knights - 1
+		targets := magic.KnightMasks[knight] & dest
+		moves = append(moves, generateMoves(knight, targets)...)
+	}
+	return moves
 }
 
 func (p *position) bishopMoves(allowed, dest uint64) []move {
@@ -416,6 +423,18 @@ func (p *position) rookMoves(allowed, dest uint64) []move{
 
 func (p *position) queenMoves(allowed, dest uint64) []move{
 	return []move{}
+}
+
+func generateMoves(square int, targets uint64) []move{
+	moves := []move{}
+	for targets != 0 {
+		target := bits.TrailingZeros64(targets)
+		targets &= targets - 1
+		var move move
+		move.create(square, target)
+		moves = append(moves, move)
+	}
+	return moves
 }
 
 func (p *position) loadPosition(fen string) error {
