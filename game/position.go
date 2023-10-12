@@ -18,9 +18,9 @@ type turn int
 const (
 	WhiteTurn turn = iota
 	BlackTurn
-	whiteMate
-	blackMate
-	stalemate
+	WhiteMate
+	BlackMate
+	Stalemate
 )
 
 type position struct {
@@ -294,7 +294,7 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	var attackers_mask uint64 = 0
 
 	var attackers uint64 = 0
-	// pawns TODO-ONLY FILE
+	// pawns
 	if defender == WhiteTurn {
 		attackers = (kingPos << 7) & magic.NotHFile
 		attackers |= (kingPos << 9) & magic.NotAFile
@@ -321,8 +321,16 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	diag_attackers := diag_ray & (p.e_bishopPos | p.e_queenPos)
 	num_attackers += bits.OnesCount64(diag_attackers)
 	attackers_mask |= diag_attackers
-	//slog.Info("diag", "num", num_attackers)
+	for diag_attackers != 0 {
+		d_attacker := bits.TrailingZeros64(diag_attackers)
+		diag_attackers &= diag_attackers - 1
 
+		blockers := magic.MagicBishopBlockerMasks[d_attacker] & p.getAllPieces()
+		idx := magic.BishopHash(magic.Square(d_attacker), blockers)
+		targets := magic.MagicMovesBishop[d_attacker][idx]
+		attackers_mask |= targets & diag_ray
+	}
+	//slog.Info("diag", "num", num_attackers)
 
 	// rooks + queen
 	straight_blocked := magic.MagicRookBlockerMasks[square] & p.getAllPieces()
@@ -331,6 +339,15 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	straight_attackers := straight_ray & (p.e_rookPos | p.e_queenPos)
 	num_attackers += bits.OnesCount64(straight_attackers)
 	attackers_mask |= straight_attackers
+	for straight_attackers != 0 {
+		s_attacker := bits.TrailingZeros64(straight_attackers)
+		straight_attackers &= straight_attackers - 1
+
+		blockers := magic.MagicRookBlockerMasks[s_attacker] & p.getAllPieces()
+		idx := magic.RookHash(magic.Square(s_attacker), blockers)
+		targets := magic.MagicMovesRook[s_attacker][idx]
+		attackers_mask |= targets & straight_ray
+	}
 	//slog.Info("rook", "num", num_attackers)
 
 
