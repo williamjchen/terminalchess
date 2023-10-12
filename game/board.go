@@ -110,17 +110,17 @@ func (b *board) buildChessRow(row int, flipped bool) string {
 
 func (b *board) buildPaddingRow(row int) string {
 	return ""
-	s := strings.Builder{}
-	s.WriteString("  ")
-	s.WriteString(b.vert)
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 5; j++ {
-			s.WriteString(" ")
-		}
-		s.WriteString(b.vert)
-	}
-	s.WriteString("\n")
-	return s.String()
+	// s := strings.Builder{}
+	// s.WriteString("  ")
+	// s.WriteString(b.vert)
+	// for i := 0; i < 8; i++ {
+	// 	for j := 0; j < 5; j++ {
+	// 		s.WriteString(" ")
+	// 	}
+	// 	s.WriteString(b.vert)
+	// }
+	// s.WriteString("\n")
+	// return s.String()
 }
 
 func (b *board) PrintBoard(flipped bool) string { // flipped = false is white at bottom
