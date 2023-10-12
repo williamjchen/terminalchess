@@ -1,5 +1,6 @@
 package magic
 
+// THIS FILE GENERATES MAGIC BITBOARDS
 // More info: https://www.chessprogramming.org/Magic_Bitboards
 // 			  https://analog-hors.github.io/site/magic-bitboards/
 
