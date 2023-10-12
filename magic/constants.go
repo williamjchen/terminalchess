@@ -72,18 +72,25 @@ func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur
 		return
 	}
 
-	generateRookBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | 1 << bits.TrailingZeros64(blockerMask)) // with
+	generateRookBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | (1 << bits.TrailingZeros64(blockerMask))) // with
 	generateRookBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur) // without
 }
 
 func generateBishopBlockerBoardPermutations(origin Square, blockerMask uint64, cur uint64) {
 	if blockerMask == 0 {
+		if origin == 58 && cur == uint64(2814749767106560) {
+			slog.Info("wtf?", "ok", bishopMoves(origin, cur))
+		}
+		
 		magicIndex := BishopHash(origin, cur)
+		if magicIndex == 0 {
+			slog.Info("hmm", "ok", origin, "mask", cur, "index", magicIndex)
+		}
 		MagicMovesBishop[origin][magicIndex] = bishopMoves(origin, cur)
 		return
 	}
 
-	generateBishopBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | 1 << bits.TrailingZeros64(blockerMask)) // with
+	generateBishopBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | (1 << bits.TrailingZeros64(blockerMask))) // with
 	generateBishopBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur) // without
 }
 
@@ -148,7 +155,7 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 	for move % 8 > start % 8 {
 		moves |= (1 << move)
 
-		if blockers & ^(1 << move) != blockers {
+		if blockers & (1 << move) != 0 {
 			break
 		}
 		move += 9
@@ -159,7 +166,7 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 	for move % 8 < start % 8 {
 		moves |= (1 << move)
 
-		if blockers & ^(1 << move) != blockers {
+		if blockers & (1 << move) != 0 {
 			break
 		}
 		move += 7
@@ -170,7 +177,7 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 	for move % 8 > start % 8 {
 		moves |= (1 << move)
 
-		if blockers & ^(1 << move) != blockers {
+		if blockers & (1 << move) != 0 {
 			break
 		}
 		move -= 7
@@ -181,21 +188,25 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 	for move % 8 < start % 8 {
 		moves |= (1 << move)
 
-		if blockers & ^(1 << move) != blockers {
+		if blockers & (1 << move) != 0 {
 			break
 		}
 		move -= 9
+	}
+
+	if origin == 4 && blockers == 10240 {
+		slog.Info("this is inside generate bishp moves", "moves", moves, "block", blockers)
 	}
 	
 	return moves
 }
 
 func RookHash(origin Square, blockers uint64) uint64 {
-	return (blockers >> magicNumberRook[origin]) >> magicRookShifts[origin] // (blockers * magic) >> (64 - index_bits)
+	return (blockers * magicNumberRook[origin]) >> magicRookShifts[origin] // (blockers * magic) >> (64 - index_bits)
 }
 
 func BishopHash(origin Square, blockers uint64) uint64 {
-	return (blockers >> magicNumberBishop[origin]) >> magicBishopShifts[origin] // (blockers * magic) >> (64 - index_bits)
+	return (blockers * magicNumberBishop[origin]) >> magicBishopShifts[origin] // (blockers * magic) >> (64 - index_bits)
 }
 
 // Below are precalculated magic numbers from: https://github.com/dylhunn/dragontoothmg/blob/master/constants.go
