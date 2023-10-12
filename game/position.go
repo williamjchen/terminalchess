@@ -59,6 +59,7 @@ type position struct {
     fullMoveNumber int
     enPassant uint64 // en passant square
 
+	nextTurnMoves []move
 
 	// STORES THE CURRENT TURN'S POSITIONS
 	pawnPos uint64
@@ -85,6 +86,7 @@ func NewPosition(fen string) *position {
 	p.castleRights = 0
 	p.enPassant = 0
 	p.loadPosition(fen)
+	p.nextTurnMoves = p.cleanMoves(p.generateLegalMoves())
 
 	return &p
 }
@@ -173,6 +175,17 @@ func (p *position) move(origin, dest int) bool {
 		} else if p.turn == BlackTurn {
 			p.turn = WhiteTurn
 		}
+		p.nextTurnMoves = p.cleanMoves(p.generateLegalMoves())
+		if len(p.nextTurnMoves) == 0 {
+			if p.turn == WhiteTurn {
+				p.turn = BlackMate
+			} else if p.turn == BlackTurn {
+				p.turn = WhiteMate
+			}
+			slog.Info("checkmate", "status", p.turn)
+		}
+		slog.Info("next moves", "moves", p.nextTurnMoves)
+
 		return true
 	}
 	slog.Info("invalid move")
@@ -180,7 +193,7 @@ func (p *position) move(origin, dest int) bool {
 }
 
 func (p *position) validateMove(origin, dest int) bool {
-	moves := p.generateLegalMoves()
+	moves := p.nextTurnMoves
 	for _, move := range moves {
 		//slog.Info("Generated moves", "move", move, "from", move.origin(), "to", move.dest())
 		from := move.origin()
@@ -282,6 +295,17 @@ func (p *position) generateLegalMoves() []move {
 	moves = append(moves, p.kingMoves(magic.Everything)...)
 
 	return moves
+}
+
+func (p *position) cleanMoves(moves []move) []move {
+	clean := []move{}
+	for _, move := range moves {
+		to := move.dest()
+		if (1 << to & p.allPieces == 0) {
+			clean = append(clean, move)
+		}
+	}
+	return clean
 }
 
 func (p *position) underDirectAttack(defender turn, squares ...int) bool {
