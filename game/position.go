@@ -277,11 +277,11 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	var attackers uint64 = 0
 	// pawns TODO-ONLY FILE
 	if defender == WhiteTurn {
-		attackers = p.kingPos << 7
-		attackers |= p.kingPos << 9
+		attackers = (p.kingPos << 7) & magic.NotHFile
+		attackers |= (p.kingPos << 9) & magic.NotAFile
 	} else {
-		attackers = p.kingPos >> 7
-		attackers |= p.kingPos >> 9
+		attackers = (p.kingPos >> 7) & magic.NotAFile
+		attackers |= (p.kingPos >> 9) & magic.NotHFile
 	}
 	attackers &= p.e_pawnPos
 	num_attackers += bits.OnesCount64(attackers)
