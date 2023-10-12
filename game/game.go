@@ -1,5 +1,9 @@
 package game
 
+import (
+	"strings"
+)
+
 type Game struct {
 	board *board
 }
@@ -20,11 +24,39 @@ func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at b
 }
 
 func (g *Game) WhiteMove(move string) bool {
-	g.board.move()
+	valid, origin, dest := parseMove(move)
+	if !valid {
+		return false
+	}
+	g.board.move(origin, dest)
 	return true
 }
 
 func (g *Game) BlackMove(move string) bool {
-	g.board.move()
+	valid, origin, dest := parseMove(move)
+	if !valid {
+		return false
+	}
+	g.board.move(origin, dest)
 	return true
+}
+
+func parseMove(move string) (bool, int, int) {
+	move = strings.ToLower(move)
+	if len(move) >= 4 {
+		fromRank := rune(move[0])
+		fromFile := rune(move[1])
+		toRank := rune(move[2])
+		toFile := rune(move[3])
+
+		if fromRank < 'a' || fromRank > 'h' || fromFile < '1' || fromFile > '8' {
+			return false, -1, -1
+		}
+		if toRank < 'a' || toRank > 'h' || toFile < '1' || toFile > '8' {
+			return false, -1, -1
+		}
+
+		return true, int((fromFile - '1') * 8 + (fromRank - 'a')), int((toFile - '1') * 8 + (toRank - 'a'))
+	}
+	return false, -1, -1
 }
