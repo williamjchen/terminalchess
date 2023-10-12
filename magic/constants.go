@@ -30,12 +30,14 @@ package magic
 
 import (
 	"math/bits"
+	"log/slog"
 )
 
 // Square index values from 0-63.
 type Square uint8
 
 func Init() {
+	slog.Info("Generating magic bitboards....")
 	MagicMovesRook = make([][]uint64, 64, 64)
 	MagicMovesBishop = make([][]uint64, 64, 64)
 	for i := 0; i < 64; i++ {
@@ -67,6 +69,7 @@ func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur
 	if blockerMask == 0 {
 		magicIndex := RookHash(origin, cur)
 		MagicMovesRook[origin][magicIndex] = rookMoves(origin, cur)
+		return
 	}
 
 	generateRookBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | 1 << bits.TrailingZeros64(blockerMask)) // with
@@ -77,6 +80,7 @@ func generateBishopBlockerBoardPermutations(origin Square, blockerMask uint64, c
 	if blockerMask == 0 {
 		magicIndex := BishopHash(origin, cur)
 		MagicMovesBishop[origin][magicIndex] = bishopMoves(origin, cur)
+		return
 	}
 
 	generateBishopBlockerBoardPermutations(origin, blockerMask & (blockerMask - 1), cur | 1 << bits.TrailingZeros64(blockerMask)) // with
@@ -86,7 +90,6 @@ func generateBishopBlockerBoardPermutations(origin Square, blockerMask uint64, c
 func rookMoves(origin Square, blockers uint64) uint64 {
 	var moves uint64 = 0
 	var start uint64 = 1 << origin
-
 	// up
 	move := start << 8
 	for move != 0 {
@@ -113,7 +116,7 @@ func rookMoves(origin Square, blockers uint64) uint64 {
 
 	// right
 	move = start << 1
-	for bits.TrailingZeros64(move) < ((int(origin) / 8) + 1) * 8 {
+	for bits.TrailingZeros64(move) < ((int(origin) / 8) + 1) * 8 && move != 0 {
 		moves |= move
 
 		if blockers & ^move != blockers {
@@ -124,7 +127,7 @@ func rookMoves(origin Square, blockers uint64) uint64 {
 
 	// left
 	move = start >> 1
-	for bits.TrailingZeros64(move) >= (int(origin) / 8) * 8 {
+	for bits.TrailingZeros64(move) >= (int(origin) / 8) * 8 && move != 0{
 		moves |= move
 
 		if blockers & ^move != blockers {
