@@ -17,9 +17,10 @@ type turn int
 const (
 	WhiteTurn turn = iota
 	BlackTurn
+	whiteMate
+	blackMate
+	stalemate
 )
-
-type move uint16
 
 type position struct {
 	// bitboard layout
@@ -96,6 +97,89 @@ func (p *position) getBlackPieces() uint64 {return p.colourBB[1]}
 func (p *position) getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 
 
+// we use these functions to create simple move.
+
+func (p *position) move(origin, dest int) bool {
+	origin_pos := uint64(1) << origin
+	dest_pos := uint64(1) << dest
+	if p.validateMove(origin, dest) {
+		origin_piece := p.pieceAtSquare(origin)
+		switch origin_piece {
+		case "P":
+			p.movePiece(0, 0, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "N":
+			p.movePiece(1, 0, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "B":
+			p.movePiece(2, 0, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "R":
+			p.movePiece(3, 0, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "Q":
+			p.movePiece(4, 0, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "K":
+			p.movePiece(5, 0, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "p":
+			p.movePiece(0, 1, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "n":
+			p.movePiece(1, 1, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "b":
+			p.movePiece(2, 1, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "r":
+			p.movePiece(3, 1, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "q":
+			p.movePiece(4, 1, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		case "k":
+			p.movePiece(5, 1, origin_pos, dest_pos)
+			p.removeAt(dest, true)
+		}
+
+		return true
+	}
+	return false
+}
+
+func (p *position) validateMove(origin, dest int) bool {
+	moves := p.generateLegalMoves()
+	for _, move := range moves {
+		from := move.origin()
+		to := move.dest()
+		if origin == from && dest == to {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *position) movePiece(pieceIndex, colourIndex int, origin, dest uint64) {
+	p.typeBB[pieceIndex] &= ^origin
+	p.typeBB[pieceIndex] |= dest // add new
+	p.colourBB[colourIndex] &= ^origin // remove origin
+	p.colourBB[colourIndex] |= dest // add new
+}
+
+func (p *position) removeAt(square int, white bool) {
+	pos := uint64(1) << square
+	if white {
+		p.colourBB[0] &= ^pos
+	} else {
+		p.colourBB[1] &= ^pos
+	}
+	for i := 0; i < 6; i++ {
+		p.typeBB[i] &= ^pos
+	}
+}
+
+// This is used to generate all moves. Required for engine
 func (p *position) generateLegalMoves() []move {
 	var moves []move
 	var kingPos, pawnPos, knightPos, bishopPos, rookPos, queenPos, allPieces uint64
@@ -275,14 +359,6 @@ func (p *position) rookPushes(rook, allowed, dest uint64) []move{
 
 func (p *position) queenPushes(queen, allowed, dest uint64) []move{
 	return []move{}
-}
-
-func (p *position) move() {
-	if p.turn == WhiteTurn {
-		p.turn = BlackTurn
-	} else {
-		p.turn = WhiteTurn
-	}
 }
 
 func (p *position) loadPosition(fen string) error {

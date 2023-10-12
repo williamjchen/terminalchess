@@ -49,8 +49,8 @@ func NewBoard() *board {
 	return &b
 }
 
-func (b *board) move() {
-	b.pos.move()
+func (b *board) move() bool{
+	return b.pos.move(1, 1)
 }
 
 func (b *board) buildBorderRow(row int) string {
