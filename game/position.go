@@ -272,7 +272,7 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	var attackers_mask uint64 = 0
 
 	var attackers uint64 = 0
-	// pawns
+	// pawns TODO-ONLY FILE
 	if defender == WhiteTurn {
 		attackers = p.kingPos << 7
 		attackers |= p.kingPos << 9
@@ -394,7 +394,41 @@ func (p *position) kingMoves(dest uint64) []move{
 }
 
 func (p *position) pawnPushes(allowed, dest uint64) []move{
-	return []move{}
+	moves := []move{}
+	free := ^p.getAllPieces()
+	pawns := p.pawnPos & allowed
+	var targets, double uint64
+	modifier := 8
+	if p.turn == WhiteTurn {
+		targets = (pawns << 8) & free
+		double = (targets << 8) & free & magic.OnlyRank[3]
+		modifier = -8
+	} else {
+		targets = (pawns >> 8) & free
+		double = (targets >> 8) & free & magic.OnlyRank[4]
+	}
+
+
+	targets &= dest
+	double &= dest
+
+	for targets != 0 {
+		target := bits.TrailingZeros64(targets)
+		targets &= targets - 1
+		var move move
+		move.create(target + modifier, target)
+		moves = append(moves, move)
+	}
+
+	for double != 0 {
+		doubleTar := bits.TrailingZeros64(double)
+		doubleTar &= doubleTar - 1
+		var move move
+		move.create(doubleTar + modifier + modifier, doubleTar)
+		moves = append(moves, move)
+	}
+
+	return moves
 }
 
 func (p *position) pawnCaptures(allowed, dest uint64) []move{
