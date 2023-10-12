@@ -414,7 +414,18 @@ func (p *position) knightMoves(allowed, dest uint64) []move{
 }
 
 func (p *position) bishopMoves(allowed, dest uint64) []move {
-	return []move{}
+	moves := []move{}
+	bishops := p.bishopPos & allowed
+	for bishops != 0 {
+		bishop := bits.TrailingZeros64(bishops)
+		bishops &= bishops - 1
+		// magic bitboards
+		blockers := magic.MagicBishopBlockerMasks[bishop] & p.getAllPieces()
+		idx := magic.BishopHash(magic.Square(bishop), blockers)
+		targets := magic.MagicMovesBishop[bishop][idx]
+		moves = append(moves, generateMoves(bishop, targets)...)
+	}
+	return moves
 }
 
 func (p *position) rookMoves(allowed, dest uint64) []move{
