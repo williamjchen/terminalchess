@@ -36,7 +36,7 @@ func NewInfoModel(com *commonModel) *infoModel {
 		case row == 2:
 			return lipgloss.NewStyle().Bold(true)
 		case row == iptr.turnRow:
-			return lipgloss.NewStyle().Foreground(lipgloss.Color("201"))
+			return lipgloss.NewStyle().Foreground(lipgloss.Color("212"))
 		default:
 			return lipgloss.NewStyle().Bold(false)
 		}
