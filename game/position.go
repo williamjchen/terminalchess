@@ -1,10 +1,15 @@
 package game
 
+// good post about generating moves: https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
+
 import (
+	"math/bits"
 	"strings"
 	"fmt"
 	"strconv"
 	"unicode"
+
+	"github.com/williamjchen/terminalchess/magic"
 )
 
 type turn int
@@ -14,16 +19,31 @@ const (
 	BlackTurn
 )
 
+type move uint16
+
 type position struct {
 	// bitboard layout
-    // 63 62 61	60 59 58 57	56
-    // 55 54 53	52 51 50 49	48
-    // 47 46 45	44 43 42 41	40
-    // 39 38 37	36 35 34 33	32
-    // 31 30 29	28 27 26 25	24
-    // 23 22 21	20 19 18 17	16
-    // 15 14 13	12 11 10 09	08
-    // 07 06 05	04 03 02 01 00
+	// 56 57 58 59 60 61 62 63
+	// 48 49 50 51 52 53 54 55
+	// 40 41 42 43 44 45 46 47 
+	// 32 33 34 35 36 37 38 39 
+	// 24 25 26 27 28 29 30 31 
+	// 16 17 18 19 20 21 22 23 
+	// 08 09 10 11 12 13 14 15 
+	// 00 01 02 03 04 05 06 07
+	// ^ corresponds to rank and file index at 1
+	// 8
+	// 7
+	// ... (files)
+	// 3
+	// 2
+	// 1  2  3  4  5  6  7  8 (rank)
+	// A  B  C  D  E  F  G  H
+	// Compass for bitboard
+	// <<7 <<8 <<9
+	// >>1  0  <<1
+	// >>9 >>8 >>7
+	
 	typeBB [6]uint64
 	colourBB [2]uint64
 
@@ -50,37 +70,214 @@ func NewPosition(fen string) *position {
 	return &p
 }
 
-func (p *position)getWhitePawns() uint64 {return p.typeBB[0] & p.colourBB[0]}
-func (p *position)getWhiteKnights() uint64 {return p.typeBB[1] & p.colourBB[0]}
-func (p *position)getWhiteBishops() uint64 {return p.typeBB[2] & p.colourBB[0]}
-func (p *position)getWhiteRooks() uint64 {return p.typeBB[3] & p.colourBB[0]}
-func (p *position)getWhiteQueens() uint64 {return p.typeBB[4] & p.colourBB[0]}
-func (p *position)getWhiteKing() uint64 {return p.typeBB[5] & p.colourBB[0]}
+func (p *position) getWhitePawns() uint64 {return p.typeBB[0] & p.colourBB[0]}
+func (p *position) getWhiteKnights() uint64 {return p.typeBB[1] & p.colourBB[0]}
+func (p *position) getWhiteBishops() uint64 {return p.typeBB[2] & p.colourBB[0]}
+func (p *position) getWhiteRooks() uint64 {return p.typeBB[3] & p.colourBB[0]}
+func (p *position) getWhiteQueens() uint64 {return p.typeBB[4] & p.colourBB[0]}
+func (p *position) getWhiteKing() uint64 {return p.typeBB[5] & p.colourBB[0]}
 
-func (p *position)getBlackPawns() uint64 {return p.typeBB[0] & p.colourBB[1]}
-func (p *position)getBlackKnights() uint64 {return p.typeBB[1] & p.colourBB[1]}
-func (p *position)getBlackBishops() uint64 {return p.typeBB[2] & p.colourBB[1]}
-func (p *position)getBlackRooks() uint64 {return p.typeBB[3] & p.colourBB[1]}
-func (p *position)getBlackQueens() uint64 {return p.typeBB[4] & p.colourBB[1]}
-func (p *position)getBlackKing() uint64 {return p.typeBB[5] & p.colourBB[1]}
+func (p *position) getBlackPawns() uint64 {return p.typeBB[0] & p.colourBB[1]}
+func (p *position) getBlackKnights() uint64 {return p.typeBB[1] & p.colourBB[1]}
+func (p *position) getBlackBishops() uint64 {return p.typeBB[2] & p.colourBB[1]}
+func (p *position) getBlackRooks() uint64 {return p.typeBB[3] & p.colourBB[1]}
+func (p *position) getBlackQueens() uint64 {return p.typeBB[4] & p.colourBB[1]}
+func (p *position) getBlackKing() uint64 {return p.typeBB[5] & p.colourBB[1]}
 
-func (p *position)getPawns() uint64 {return p.typeBB[0]}
-func (p *position)getKnights() uint64 {return p.typeBB[1]}
-func (p *position)getBishops() uint64 {return p.typeBB[2]}
-func (p *position)getRooks() uint64 {return p.typeBB[3]}
-func (p *position)getQueens() uint64 {return p.typeBB[4]}
-func (p *position)getKing() uint64 {return p.typeBB[5]}
+func (p *position) getPawns() uint64 {return p.typeBB[0]}
+func (p *position) getKnights() uint64 {return p.typeBB[1]}
+func (p *position) getBishops() uint64 {return p.typeBB[2]}
+func (p *position) getRooks() uint64 {return p.typeBB[3]}
+func (p *position) getQueens() uint64 {return p.typeBB[4]}
+func (p *position) getKing() uint64 {return p.typeBB[5]}
 
-func (p *position)getWhitePieces() uint64 {return p.colourBB[0]}
-func (p *position)getBlackPieces() uint64 {return p.colourBB[1]}
-func (p *position)getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
+func (p *position) getWhitePieces() uint64 {return p.colourBB[0]}
+func (p *position) getBlackPieces() uint64 {return p.colourBB[1]}
+func (p *position) getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 
 
-func (p *position)validateMove() {
+func (p *position) generateLegalMoves() []move {
+	var moves []move
+	var kingPos, pawnPos, knightPos, bishopPos, rookPos, queenPos, allPieces uint64
+	var e_kingPos, e_pawnPos, e_knightPos, e_bishopPos, e_rookPos, e_queenPos uint64
 
+	if p.turn == WhiteTurn {
+		kingPos = p.getWhiteKing()
+		pawnPos = p.getWhitePawns()
+		knightPos = p.getWhiteKnights()
+		bishopPos = p.getWhiteBishops()
+		rookPos = p.getWhiteRooks()
+		queenPos = p.getWhiteQueens()
+		e_kingPos = p.getBlackKing()
+		e_pawnPos = p.getBlackPawns()
+		e_knightPos = p.getBlackKnights()
+		e_bishopPos = p.getBlackBishops()
+		e_rookPos = p.getBlackRooks()
+		e_queenPos = p.getBlackQueens()
+		allPieces = p.getWhitePieces()
+	} else {
+		kingPos = p.getBlackKing()
+		pawnPos = p.getBlackPawns()
+		knightPos = p.getBlackKnights()
+		bishopPos = p.getBlackBishops()
+		rookPos = p.getBlackRooks()
+		queenPos = p.getBlackQueens()
+		e_kingPos = p.getWhiteKing()
+		e_pawnPos = p.getWhitePawns()
+		e_knightPos = p.getWhiteKnights()
+		e_bishopPos = p.getWhiteBishops()
+		e_rookPos = p.getWhiteRooks()
+		e_queenPos = p.getWhiteQueens()
+		allPieces = p.getBlackPieces()
+	}
+
+	num_attackers, allowed_dests := p.numAttacks(p.turn, kingPos, e_kingPos, e_pawnPos, e_knightPos, e_bishopPos, e_rookPos, e_queenPos)
+	if num_attackers > 1 { // multiple check - only king moves
+		moves = append(moves, p.kingPushes(kingPos, allowed_dests)...) // king captures?
+		return moves
+	} else if num_attackers == 1 { // single check
+		pinned := p.generatePinnedSquares(kingPos, e_rookPos, e_bishopPos, e_queenPos, allPieces)
+		nonPinned := ^pinned
+
+		allowed_dests := nonPinned
+		moves = append(moves, p.pawnCaptures(pawnPos, nonPinned, allowed_dests)...)
+		moves = append(moves, p.pawnPushes(pawnPos, nonPinned, allowed_dests)...)
+		moves = append(moves, p.knightPushes(knightPos, nonPinned, allowed_dests)...)
+		moves = append(moves, p.rookPushes(rookPos, nonPinned, allowed_dests)...)
+		moves = append(moves, p.bishopPushes(bishopPos, nonPinned, allowed_dests)...)
+		moves = append(moves, p.queenPushes(queenPos, nonPinned, allowed_dests)...)
+		moves = append(moves, p.kingPushes(kingPos, allowed_dests)...)
+		return moves
+	}
+
+	// non-check moves
+	pinned := p.generatePinnedSquares(kingPos, e_rookPos, e_bishopPos, e_queenPos, allPieces)
+	nonPinned := ^pinned
+	moves = append(moves, p.pawnCaptures(pawnPos, nonPinned, magic.Everything)...)
+	moves = append(moves, p.pawnPushes(pawnPos, nonPinned, magic.Everything)...)
+	moves = append(moves, p.knightPushes(knightPos, nonPinned, magic.Everything)...)
+	moves = append(moves, p.rookPushes(rookPos, nonPinned, magic.Everything)...)
+	moves = append(moves, p.bishopPushes(bishopPos, nonPinned, magic.Everything)...)
+	moves = append(moves, p.queenPushes(queenPos, nonPinned, magic.Everything)...)
+	moves = append(moves, p.kingPushes(kingPos, magic.Everything)...)
+
+	return moves
 }
 
-func (p *position)move() {
+func (p *position) numAttacks(defender turn, kingPos, e_kingPos, e_pawnPos, e_knightPos, e_bishopPos, e_rookPos, e_queenPos uint64) (int, uint64) {
+	square := bits.TrailingZeros64(kingPos)
+	num_attackers := 0
+	var attackers_mask uint64 = 0
+
+	var attackers uint64 = 0
+	// pawns
+	if defender == WhiteTurn {
+		attackers = kingPos << 7
+		attackers |= kingPos << 9
+	} else {
+		attackers = kingPos >> 7
+		attackers |= kingPos >> 9
+	}
+	attackers &= e_pawnPos
+	num_attackers += bits.OnesCount64(attackers)
+	attackers_mask |= attackers
+
+	// kings
+
+	// kights
+	attackers = magic.KnightMasks[square] & e_knightPos
+	num_attackers += bits.OnesCount64(attackers)
+	attackers_mask |= attackers
+
+	// bishops + queen
+	diag_blocked := magic.MagicBishopBlockerMasks[square] & p.getAllPieces()
+	diag_idx := magic.BishopHash(magic.Square(square), diag_blocked)
+	diag_ends := magic.MagicMovesBishop[square][diag_idx]
+	diag_attackers := diag_ends & (e_bishopPos | e_queenPos)
+	num_attackers += bits.OnesCount64(diag_attackers)
+	attackers_mask |= diag_attackers
+
+	// rooks + queen
+	straight_blocked := magic.MagicRookBlockerMasks[square] & p.getAllPieces()
+	straight_idx := magic.RookHash(magic.Square(square), straight_blocked)
+	straight_ends := magic.MagicMovesRook[square][straight_idx]
+	straight_attackers := straight_ends & (e_rookPos | e_queenPos)
+	num_attackers += bits.OnesCount64(straight_attackers)
+	attackers_mask |= straight_attackers
+
+	return num_attackers, attackers_mask
+}
+
+func (p *position) generatePinnedSquares (origin, e_rookPos, e_bishopPos, e_queenPos, myPieces uint64) uint64 {
+	kingSquare := bits.TrailingZeros64(origin)
+	var opponent_slide uint64 = 0
+	var king_slide uint64 = 0
+	king_slide = p.generateDiagonalSquares(kingSquare, p.getAllPieces()) | p.generateStraightSquares(kingSquare, p.getAllPieces())
+
+	// rook + queen
+	op := e_rookPos | e_queenPos
+	for op != 0 {
+		rookIdx := bits.TrailingZeros64(op)
+		op &= op - 1
+		targs := p.generateStraightSquares(rookIdx, p.getAllPieces())
+
+		opponent_slide |= targs
+	}
+
+	// bishop + queen
+	op = e_bishopPos | e_queenPos
+	for op != 0 {
+		bishopIdx := bits.TrailingZeros64(op)
+		op &= op - 1
+		targs := p.generateDiagonalSquares(bishopIdx, p.getAllPieces())
+
+		opponent_slide |= targs
+	}
+
+	return king_slide & opponent_slide & myPieces
+}
+
+func (p *position) generateDiagonalSquares(origin int, pieces uint64) uint64 {
+	blockers := magic.MagicBishopBlockerMasks[origin] & pieces
+	index := magic.BishopHash(magic.Square(origin), blockers)
+	return magic.MagicMovesBishop[origin][index]
+}
+
+func (p *position) generateStraightSquares(origin int, pieces uint64) uint64 {
+	blockers := magic.MagicRookBlockerMasks[origin] & pieces
+	index := magic.RookHash(magic.Square(origin), blockers)
+	return magic.MagicMovesRook[origin][index]
+}
+
+func (p *position) kingPushes(king uint64, dest uint64) []move{
+	return []move{}
+}
+
+func (p *position) pawnPushes(pawns, allowed, dest uint64) []move{
+	return []move{}
+}
+
+func (p *position) pawnCaptures(pawns, allowed, dest uint64) []move{
+	return []move{}
+}
+
+func (p *position) knightPushes(knights, allowed, dest uint64) []move{
+	return []move{}
+}
+
+func (p *position) bishopPushes(bishops, allowed, dest uint64) []move {
+	return []move{}
+}
+
+func (p *position) rookPushes(rook, allowed, dest uint64) []move{
+	return []move{}
+}
+
+func (p *position) queenPushes(queen, allowed, dest uint64) []move{
+	return []move{}
+}
+
+func (p *position) move() {
 	if p.turn == WhiteTurn {
 		p.turn = BlackTurn
 	} else {
@@ -88,7 +285,7 @@ func (p *position)move() {
 	}
 }
 
-func (p *position)loadPosition(fen string) error {
+func (p *position) loadPosition(fen string) error {
 	if fen == "" {
 		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	}
@@ -165,7 +362,13 @@ func (p *position)loadPosition(fen string) error {
 	return nil
 }
 
-func (p *position) pieceAtPosition(rank, file int) string {
+func (p *position) pieceAtSquare(square int) string {
+	rank := square / 8
+	file := square % 8 + 1
+	return p.pieceAtPosition(rank, file)
+}
+
+func (p *position) pieceAtPosition(rank, file int) string { //rank = 8, file = 1 is top left
 	index := p.fileRankToIndex(rank, file)
 
 	var piece, colour uint64 = 0, 0
@@ -188,6 +391,7 @@ func (p *position) pieceAtPosition(rank, file int) string {
 	return p.pieceToChar[i: i + 1]
 }
 
-func (p *position)fileRankToIndex(rank, file int) uint64 {
-	return 1 << (64 - ((8 - rank) * 8 + (file - 1)) - 1);
+func (p *position) fileRankToIndex(rank, file int) uint64 { // vertical is file(A-H). rank is horizontal(1-8)
+	i := (rank * 8 - 1) - (8 - file)
+	return 1 << i
 }
