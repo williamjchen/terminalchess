@@ -422,7 +422,7 @@ func (p *position) bishopMoves(allowed, dest uint64) []move {
 		// magic bitboards
 		blockers := magic.MagicBishopBlockerMasks[bishop] & p.getAllPieces()
 		idx := magic.BishopHash(magic.Square(bishop), blockers)
-		targets := magic.MagicMovesBishop[bishop][idx]
+		targets := magic.MagicMovesBishop[bishop][idx] & dest
 		moves = append(moves, generateMoves(bishop, targets)...)
 	}
 	return moves
@@ -437,14 +437,31 @@ func (p *position) rookMoves(allowed, dest uint64) []move{
 		// magic bitboards
 		blockers := magic.MagicRookBlockerMasks[rook] & p.getAllPieces()
 		idx := magic.RookHash(magic.Square(rook), blockers)
-		targets := magic.MagicMovesRook[rook][idx]
+		targets := magic.MagicMovesRook[rook][idx] & dest
 		moves = append(moves, generateMoves(rook, targets)...)
 	}
 	return moves
 }
 
 func (p *position) queenMoves(allowed, dest uint64) []move{
-	return []move{}
+	moves := []move{}
+	queens := p.queenPos & allowed
+	for queens != 0 {
+		queen := bits.TrailingZeros64(queens)
+		queens &= queens - 1
+		// magic bitboards
+		// diagonal
+		blockers := magic.MagicBishopBlockerMasks[queen] & p.getAllPieces()
+		idx := magic.BishopHash(magic.Square(queen), blockers)
+		targets := magic.MagicMovesBishop[queen][idx] & dest
+		moves = append(moves, generateMoves(queen, targets)...)
+		// straight
+		blockers = magic.MagicRookBlockerMasks[queen] & p.getAllPieces()
+		idx = magic.RookHash(magic.Square(queen), blockers)
+		targets = magic.MagicMovesRook[queen][idx] & dest
+		moves = append(moves, generateMoves(queen, targets)...)
+	}
+	return moves
 }
 
 func generateMoves(square int, targets uint64) []move{
