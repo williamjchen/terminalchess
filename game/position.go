@@ -163,6 +163,11 @@ func (p *position) move(origin, dest int) bool {
 			p.movePiece(5, 1, origin_pos, dest_pos)
 		}
 
+		if p.turn == WhiteTurn {
+			p.turn = BlackTurn
+		} else if p.turn == BlackTurn {
+			p.turn = WhiteTurn
+		}
 		return true
 	}
 	slog.Info("invalid move")
