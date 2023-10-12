@@ -269,6 +269,15 @@ func (p *position) generateLegalMoves() []move {
 	return moves
 }
 
+func (p *position) underDirectAttack(defender turn, squares ...int) bool {
+	for _, s := range squares {
+		if n, _ := p.numAttacks(defender, 1 << s); n > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	square := bits.TrailingZeros64(kingPos)
 	num_attackers := 0
@@ -277,11 +286,11 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	var attackers uint64 = 0
 	// pawns TODO-ONLY FILE
 	if defender == WhiteTurn {
-		attackers = (p.kingPos << 7) & magic.NotHFile
-		attackers |= (p.kingPos << 9) & magic.NotAFile
+		attackers = (kingPos << 7) & magic.NotHFile
+		attackers |= (kingPos << 9) & magic.NotAFile
 	} else {
-		attackers = (p.kingPos >> 7) & magic.NotAFile
-		attackers |= (p.kingPos >> 9) & magic.NotHFile
+		attackers = (kingPos >> 7) & magic.NotAFile
+		attackers |= (kingPos >> 9) & magic.NotHFile
 	}
 	attackers &= p.e_pawnPos
 	num_attackers += bits.OnesCount64(attackers)
@@ -393,7 +402,33 @@ func (p *position) kingPushes(dest uint64) []move{
 
 // with castling
 func (p *position) kingMoves(dest uint64) []move{
-	return []move{}
+	kingSquare := bits.TrailingZeros64(p.kingPos)
+	moves := []move{}
+	var canCastleKingSide, canCastleQueenSide bool
+	if p.turn == WhiteTurn {
+		kingSideClear := p.allPieces&((1<<5)|(1<<6)) == 0
+		queenSideClear := p.allPieces&((1<<3)|(1<<2)|(1<<1)) == 0
+		canCastleKingSide = kingSideClear && p.canCastleKingSide(true) && !p.underDirectAttack(WhiteTurn, 5, 6)
+		canCastleQueenSide = queenSideClear && p.canCastleQueenSide(true) && !p.underDirectAttack(WhiteTurn, 2, 3)
+	} else if p.turn == BlackTurn {
+		kingSideClear := p.allPieces&((1<<61)|(1<<62)) == 0
+		queenSideClear := p.allPieces&((1<<57)|(1<<58)|(1<<59)) == 0
+		canCastleKingSide = kingSideClear && p.canCastleKingSide(false) && !p.underDirectAttack(BlackTurn, 61, 62)
+		canCastleQueenSide = queenSideClear && p.canCastleQueenSide(false) && !p.underDirectAttack(BlackTurn, 58, 59)
+	}
+
+	if canCastleKingSide {
+		var move move
+		move.create(kingSquare, kingSquare + 2)
+		moves = append(moves, move)
+	}
+	if canCastleQueenSide {
+		var move move
+		move.create(kingSquare, kingSquare - 2)
+		moves = append(moves, move)
+	}
+	moves = append(moves, p.kingPushes(dest)...)
+	return moves
 }
 
 func (p *position) pawnPushes(allowed, dest uint64) []move{
@@ -654,4 +689,20 @@ func (p *position) pieceAtPosition(rank, file int) string { //rank = 8, file = 1
 func (p *position) fileRankToIndex(rank, file int) uint64 { // vertical is file(A-H). rank is horizontal(1-8)
 	i := (rank * 8 - 1) - (8 - file)
 	return 1 << i
+}
+
+func (p *position) canCastleKingSide(white bool) bool {
+	if white {
+		return p.castleRights & 1 == 1
+	} else {
+		return (p.castleRights>>2)&1 == 1
+	}
+}
+
+func (p *position) canCastleQueenSide(white bool) bool {
+	if white {
+		return (p.castleRights>>1)&1 == 1
+	} else {
+		return (p.castleRights>>3)&1 == 1
+	}
 }
