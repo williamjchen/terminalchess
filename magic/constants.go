@@ -77,15 +77,8 @@ func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur
 }
 
 func generateBishopBlockerBoardPermutations(origin Square, blockerMask uint64, cur uint64) {
-	if blockerMask == 0 {
-		if origin == 58 && cur == uint64(2814749767106560) {
-			slog.Info("wtf?", "ok", bishopMoves(origin, cur))
-		}
-		
+	if blockerMask == 0 {		
 		magicIndex := BishopHash(origin, cur)
-		if magicIndex == 0 {
-			slog.Info("hmm", "ok", origin, "mask", cur, "index", magicIndex)
-		}
 		MagicMovesBishop[origin][magicIndex] = bishopMoves(origin, cur)
 		return
 	}
@@ -194,10 +187,6 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 		move -= 9
 	}
 
-	if origin == 4 && blockers == 10240 {
-		slog.Info("this is inside generate bishp moves", "moves", moves, "block", blockers)
-	}
-	
 	return moves
 }
 

@@ -26,7 +26,7 @@ func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at b
 
 func (g *Game) WhiteMove(move string) bool {
 	valid, origin, dest := parseMove(move)
-	slog.Info("move", "valid", valid, "origin", origin, "dest", dest)
+	slog.Info("valid parse", "valid", valid, "origin", origin, "dest", dest)
 	if !valid {
 		return false
 	}

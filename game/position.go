@@ -120,11 +120,10 @@ func (p *position) getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 func (p *position) move(origin, dest int) bool {
 	origin_pos := uint64(1) << origin
 	dest_pos := uint64(1) << dest
-	slog.Info("origin", "square", origin, "pos", origin_pos)
-	slog.Info("dest", "square", dest, "pos", dest_pos)
+	slog.Info("move", "origin", origin, "dest", dest)
 	if p.validateMove(origin, dest) {
 		origin_piece := p.pieceAtSquare(origin)
-		slog.Info("original", "piece", origin_piece)
+		slog.Info("valid move", "piece", origin_piece)
 		switch origin_piece {
 		case "P":
 			p.removeAt(dest, false)
@@ -166,15 +165,17 @@ func (p *position) move(origin, dest int) bool {
 
 		return true
 	}
+	slog.Info("invalid move")
 	return false
 }
 
 func (p *position) validateMove(origin, dest int) bool {
 	moves := p.generateLegalMoves()
 	for _, move := range moves {
+		//slog.Info("Generated moves", "move", move, "from", move.origin(), "to", move.dest())
 		from := move.origin()
 		to := move.dest()
-		if origin == from && dest == to {
+		if (origin == from && dest == to) && (1 << dest & p.allPieces == 0) {
 			return true
 		}
 	}
@@ -237,14 +238,15 @@ func (p *position) generateLegalMoves() []move {
 	}
 
 	num_attackers, allowed_dests := p.numAttacks(p.turn, p.kingPos)
+	slog.Info("attackers", "num", num_attackers, "allowed", allowed_dests)
 	if num_attackers > 1 { // multiple check - only king moves
 		moves = append(moves, p.kingPushes(allowed_dests)...) // king captures?
 		return moves
 	} else if num_attackers == 1 { // single check
 		pinned := p.generatePinnedSquares()
 		nonPinned := ^pinned
+		slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
 
-		allowed_dests := nonPinned
 		moves = append(moves, p.pawnCaptures(nonPinned, allowed_dests)...)
 		moves = append(moves, p.pawnPushes(nonPinned, allowed_dests)...)
 		moves = append(moves, p.knightMoves(nonPinned, allowed_dests)...)
@@ -252,12 +254,15 @@ func (p *position) generateLegalMoves() []move {
 		moves = append(moves, p.bishopMoves(nonPinned, allowed_dests)...)
 		moves = append(moves, p.queenMoves(nonPinned, allowed_dests)...)
 		moves = append(moves, p.kingPushes(allowed_dests)...)
+
 		return moves
 	}
 
 	// non-check moves
 	pinned := p.generatePinnedSquares()
 	nonPinned := ^pinned
+	slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
+
 	moves = append(moves, p.pawnCaptures(nonPinned, magic.Everything)...)
 	moves = append(moves, p.pawnPushes(nonPinned, magic.Everything)...)
 	moves = append(moves, p.knightMoves(nonPinned, magic.Everything)...)
@@ -295,29 +300,34 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	attackers &= p.e_pawnPos
 	num_attackers += bits.OnesCount64(attackers)
 	attackers_mask |= attackers
-
+	//slog.Info("pawn", "num", num_attackers)
 	// kings
 
 	// kights
 	attackers = magic.KnightMasks[square] & p.e_knightPos
 	num_attackers += bits.OnesCount64(attackers)
 	attackers_mask |= attackers
+	//slog.Info("kngiht", "num", num_attackers)
 
 	// bishops + queen
 	diag_blocked := magic.MagicBishopBlockerMasks[square] & p.getAllPieces()
 	diag_idx := magic.BishopHash(magic.Square(square), diag_blocked)
-	diag_ends := magic.MagicMovesBishop[square][diag_idx]
-	diag_attackers := diag_ends & (p.e_bishopPos | p.e_queenPos)
+	diag_ray := magic.MagicMovesBishop[square][diag_idx]
+	diag_attackers := diag_ray & (p.e_bishopPos | p.e_queenPos)
 	num_attackers += bits.OnesCount64(diag_attackers)
 	attackers_mask |= diag_attackers
+	//slog.Info("diag", "num", num_attackers)
+
 
 	// rooks + queen
 	straight_blocked := magic.MagicRookBlockerMasks[square] & p.getAllPieces()
 	straight_idx := magic.RookHash(magic.Square(square), straight_blocked)
-	straight_ends := magic.MagicMovesRook[square][straight_idx]
-	straight_attackers := straight_ends & (p.e_rookPos | p.e_queenPos)
+	straight_ray := magic.MagicMovesRook[square][straight_idx]
+	straight_attackers := straight_ray & (p.e_rookPos | p.e_queenPos)
 	num_attackers += bits.OnesCount64(straight_attackers)
 	attackers_mask |= straight_attackers
+	//slog.Info("rook", "num", num_attackers)
+
 
 	return num_attackers, attackers_mask
 }
@@ -327,7 +337,7 @@ func (p *position) generatePinnedSquares () uint64 {
 	var opponent_slide uint64 = 0
 	var king_slide uint64 = 0
 	king_slide = p.generateDiagonalSquares(kingSquare, p.getAllPieces()) | p.generateStraightSquares(kingSquare, p.getAllPieces())
-
+	slog.Info("generate pinned", "king", kingSquare, "slide", king_slide)
 	// rook + queen
 	op := p.e_rookPos | p.e_queenPos
 	for op != 0 {
@@ -354,6 +364,7 @@ func (p *position) generatePinnedSquares () uint64 {
 func (p *position) generateDiagonalSquares(origin int, pieces uint64) uint64 {
 	blockers := magic.MagicBishopBlockerMasks[origin] & pieces
 	index := magic.BishopHash(magic.Square(origin), blockers)
+	slog.Info("diagonal", "origin", origin, "pieces", pieces, "blockers", blockers, "moves", magic.MagicMovesBishop[origin][index])
 	return magic.MagicMovesBishop[origin][index]
 }
 
@@ -460,7 +471,7 @@ func (p *position) pawnPushes(allowed, dest uint64) []move{
 
 	for double != 0 {
 		doubleTar := bits.TrailingZeros64(double)
-		doubleTar &= doubleTar - 1
+		double &= double - 1
 		var move move
 		move.create(doubleTar + modifier + modifier, doubleTar)
 		moves = append(moves, move)
@@ -512,6 +523,7 @@ func (p *position) knightMoves(allowed, dest uint64) []move{
 		knight := bits.TrailingZeros64(knights)
 		knights &= knights - 1
 		targets := magic.KnightMasks[knight] & dest
+		slog.Info("knightMoves", "target", targets, "dest", dest)
 		moves = append(moves, generateMoves(knight, targets)...)
 	}
 	return moves
