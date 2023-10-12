@@ -141,50 +141,50 @@ func rookMoves(origin Square, blockers uint64) uint64 {
 
 func bishopMoves(origin Square, blockers uint64) uint64 {
 	var moves uint64 = 0
-	var start uint64 = 1 << origin
+	var start uint64 = uint64(origin)
 
 	// NE
-	move := start << 9
-	for move != 0 {
-		moves |= move
+	move := start + 9
+	for move % 8 > start % 8 {
+		moves |= (1 << move)
 
-		if blockers & ^move != blockers {
+		if blockers & ^(1 << move) != blockers {
 			break
 		}
-		move <<= 9
+		move += 9
 	}
 
 	// NW
-	move = start << 7
-	for move != 0 {
-		moves |= move
+	move = start + 7
+	for move % 8 < start % 8 {
+		moves |= (1 << move)
 
-		if blockers & ^move != blockers {
+		if blockers & ^(1 << move) != blockers {
 			break
 		}
-		move <<= 7
+		move += 7
 	}
 
 	// SE
-	move = start >> 7
-	for move != 0 {
-		moves |= move
+	move = start - 7
+	for move % 8 > start % 8 {
+		moves |= (1 << move)
 
-		if blockers & ^move != blockers {
+		if blockers & ^(1 << move) != blockers {
 			break
 		}
-		move >>= 7
+		move -= 7
 	}
 
 	// SW
-	move = start >> 9
-	for move != 0 {
-		moves |= move
+	move = start - 9
+	for move % 8 < start % 8 {
+		moves |= (1 << move)
 
-		if blockers & ^move != blockers {
+		if blockers & ^(1 << move) != blockers {
 			break
 		}
-		move >>= 9
+		move -= 9
 	}
 	
 	return moves
