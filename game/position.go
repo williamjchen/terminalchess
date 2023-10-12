@@ -74,6 +74,7 @@ type position struct {
 	e_rookPos uint64
 	e_queenPos uint64
 	allPieces uint64
+	e_allPieces uint64
 }
 
 func NewPosition(fen string) *position {
@@ -217,6 +218,7 @@ func (p *position) generateLegalMoves() []move {
 		p.e_rookPos = p.getBlackRooks()
 		p.e_queenPos = p.getBlackQueens()
 		p.allPieces = p.getWhitePieces()
+		p.e_allPieces = p.getBlackPieces()
 	} else {
 		p.kingPos = p.getBlackKing()
 		p.pawnPos = p.getBlackPawns()
@@ -231,6 +233,7 @@ func (p *position) generateLegalMoves() []move {
 		p.e_rookPos = p.getWhiteRooks()
 		p.e_queenPos = p.getWhiteQueens()
 		p.allPieces = p.getBlackPieces()
+		p.e_allPieces = p.getWhitePieces()
 	}
 
 	num_attackers, allowed_dests := p.numAttacks(p.turn, p.kingPos)
@@ -432,7 +435,39 @@ func (p *position) pawnPushes(allowed, dest uint64) []move{
 }
 
 func (p *position) pawnCaptures(allowed, dest uint64) []move{
-	return []move{}
+	moves := []move{}
+	var targets uint64
+	var left, right uint64
+	var left_mod, right_mod = -7, -9
+	targets |= p.enPassant
+	targets |= p.e_allPieces
+
+	if p.turn == WhiteTurn {
+		right = p.pawnPos << 9 & magic.NotAFile & targets
+		left = p.pawnPos << 7 & magic.NotHFile & targets
+	} else if p.turn == BlackTurn {
+		right = p.pawnPos >> 7 & magic.NotAFile & targets
+		left = p.pawnPos >> 9 & magic.NotHFile & targets
+		left_mod = 9
+		right_mod = 7
+	}
+
+	for right != 0 {
+		target := bits.TrailingZeros64(right)
+		right &= right - 1
+		var move move
+		move.create(target + right_mod, target)
+		moves = append(moves, move)
+	}
+
+	for left != 0 {
+		target := bits.TrailingZeros64(left)
+		left &= left - 1
+		var move move
+		move.create(target + left_mod, target)
+		moves = append(moves, move)
+	}
+	return moves
 }
 
 func (p *position) knightMoves(allowed, dest uint64) []move{

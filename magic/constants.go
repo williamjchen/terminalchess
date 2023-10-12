@@ -212,6 +212,9 @@ var OnlyRank = [8]uint64{
 	0xFF, 0XFF00, 0XFF0000, 0XFF000000,
 	0XFF00000000, 0XFF0000000000, 0XFF000000000000, 0XFF00000000000000}
 
+var NotHFile = uint64(0x7F7F7F7F7F7F7F7F)
+var NotAFile = uint64(0xFEFEFEFEFEFEFEFE)
+
 // Masks for attacks
 // In order: knight on A1, B1, C1, ... F8, G8, H8
 var KnightMasks = [64]uint64{
