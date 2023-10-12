@@ -48,7 +48,7 @@ func Init() {
 func generateRookMagicTable() {
 	// For a rook at every board position
 	for i := 0; i < 64; i++ {
-		blockerMask := magicRookBlockerMasks[i]
+		blockerMask := MagicRookBlockerMasks[i]
 		generateRookBlockerBoardPermutations(Square(i), blockerMask, 0)
 	}
 }
@@ -56,7 +56,7 @@ func generateRookMagicTable() {
 func generateBishopMagicTable() {
 	// For a bishop at every board position
 	for i := 0; i < 64; i++ {
-		blockerMask := magicBishopBlockerMasks[i]
+		blockerMask := MagicBishopBlockerMasks[i]
 		generateBishopBlockerBoardPermutations(Square(i), blockerMask, 0)
 	}
 }
@@ -64,7 +64,7 @@ func generateBishopMagicTable() {
 // eliminates least significant bit, and calls 2 recursive functions with and without that bit. O(2^n)
 func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur uint64) {
 	if blockerMask == 0 {
-		magicIndex := (cur >> magicNumberRook[origin]) >> magicRookShifts[origin] // (blockers * magic) >> (64 - index_bits)
+		magicIndex := RookHash(origin, cur)
 		MagicMovesRook[origin][magicIndex] = rookMoves(origin, cur)
 	}
 
@@ -74,7 +74,7 @@ func generateRookBlockerBoardPermutations(origin Square, blockerMask uint64, cur
 
 func generateBishopBlockerBoardPermutations(origin Square, blockerMask uint64, cur uint64) {
 	if blockerMask == 0 {
-		magicIndex := (cur >> magicNumberBishop[origin]) >> magicBishopShifts[origin] // (blockers * magic) >> (64 - index_bits)
+		magicIndex := BishopHash(origin, cur)
 		MagicMovesBishop[origin][magicIndex] = bishopMoves(origin, cur)
 	}
 
@@ -186,6 +186,14 @@ func bishopMoves(origin Square, blockers uint64) uint64 {
 	return moves
 }
 
+func RookHash(origin Square, blockers uint64) uint64 {
+	return (blockers >> magicNumberRook[origin]) >> magicRookShifts[origin] // (blockers * magic) >> (64 - index_bits)
+}
+
+func BishopHash(origin Square, blockers uint64) uint64 {
+	return (blockers >> magicNumberBishop[origin]) >> magicBishopShifts[origin] // (blockers * magic) >> (64 - index_bits)
+}
+
 // Below are precalculated magic numbers from: https://github.com/dylhunn/dragontoothmg/blob/master/constants.go
 
 // Bitboard where every bit is active
@@ -243,7 +251,7 @@ var KingMasks = [64]uint64{
 // Thus, it exlucdes the end of each ray.
 // https://analog-hors.github.io/site/magic-bitboards/
 // Used for magic bitboards.
-var magicRookBlockerMasks = [64]uint64{
+var MagicRookBlockerMasks = [64]uint64{
 	0x000101010101017E, 0x000202020202027C, 0x000404040404047A, 0x0008080808080876,
 	0x001010101010106E, 0x002020202020205E, 0x004040404040403E, 0x008080808080807E,
 	0x0001010101017E00, 0x0002020202027C00, 0x0004040404047A00, 0x0008080808087600,
@@ -261,7 +269,7 @@ var magicRookBlockerMasks = [64]uint64{
 	0x7E01010101010100, 0x7C02020202020200, 0x7A04040404040400, 0x7608080808080800,
 	0x6E10101010101000, 0x5E20202020202000, 0x3E40404040404000, 0x7E80808080808000}
 
-var magicBishopBlockerMasks = [64]uint64{
+var MagicBishopBlockerMasks = [64]uint64{
 	0x0040201008040200, 0x0000402010080400, 0x0000004020100A00, 0x0000000040221400,
 	0x0000000002442800, 0x0000000204085000, 0x0000020408102000, 0x0002040810204000,
 	0x0020100804020000, 0x0040201008040000, 0x00004020100A0000, 0x0000004022140000,
