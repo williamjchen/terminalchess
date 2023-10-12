@@ -154,3 +154,6 @@ func (b *board) PrintBoard(flipped bool) string { // flipped = false is white at
 	return s.String()
 }
 
+func (b *board) SetStatus(stat turn) {
+	b.pos.SetStatus(stat)
+}

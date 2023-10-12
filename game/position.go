@@ -114,6 +114,11 @@ func (p *position) getWhitePieces() uint64 {return p.colourBB[0]}
 func (p *position) getBlackPieces() uint64 {return p.colourBB[1]}
 func (p *position) getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 
+func (p *position) SetStatus(stat turn) {
+	p.turn = stat
+}
+
+func (p *position) Status() turn {return p.turn}
 
 // we use these functions to create simple move.
 

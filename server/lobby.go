@@ -23,7 +23,6 @@ type lobby struct {
 	p2 *player // black
 	p1Pres bool
 	p2Pres bool
-	status gameState
 	specs []*player
 	game *Game.Game
 	timer *time.Timer
@@ -38,7 +37,6 @@ func NewLobby(done chan string, id string) *lobby {
 		id: id,
 		p1: nil,
 		p2: nil,
-		status: inProgres,
 		game: g,
 		timer: timer,
 		done: done,
@@ -59,19 +57,29 @@ func (l *lobby) End() {
 }
 
 func (l *lobby) Status() gameState{
+	var s gameState
 	switch l.game.Turn() {
 	case Game.WhiteTurn:
-		l.status = inProgres
+		s = inProgres
 	case Game.BlackTurn:
-		l.status = inProgres
+		s = inProgres
 	case Game.WhiteMate:
-		l.status = whiteWin
+		s = whiteWin
 	case Game.BlackMate:
-		l.status = blackWin
+		s = blackWin
 	case Game.Stalemate:
-		l.status = stalemate
+		s = stalemate
 	}
-	return l.status
+	return s
+}
+
+func (l *lobby) SetStatus(stat gameState) {
+	switch stat {
+	case whiteWin:
+		l.game.SetStatus(Game.WhiteMate)
+	case blackWin:
+		l.game.SetStatus(Game.BlackMate)
+	}
 }
 
 func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if black, 2 if spectator
@@ -99,14 +107,14 @@ func (l *lobby) RemovePlayer(p *player) {
 	if l.p1 == p {
 		slog.Info("Remove player 1", "id", l.id)
 		l.p1Pres = false
-		l.status = blackWin
+		l.SetStatus(blackWin)
 		l.SendMsg(p, finishMsg(1))
 		l.p1 = nil
 		l.SendMsgToSpectators(finishMsg(1))
 	} else if l.p2 == p {
 		slog.Info("Remove player 2", "id", l.id)
 		l.p2Pres = false
-		l.status = whiteWin
+		l.SetStatus(whiteWin)
 		l.SendMsg(p, finishMsg(0))
 		l.p2 = nil
 		l.SendMsgToSpectators(finishMsg(0))
@@ -129,7 +137,7 @@ func (l *lobby) sendMove(move string, p *player) bool {
 	if p != l.p1 && p != l.p2 {
 		return false
 	}
-	if p.lob.status != inProgres {
+	if p.lob.Status() != inProgres {
 		return false
 	}
 

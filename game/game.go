@@ -24,9 +24,9 @@ func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at b
 	return g.board.PrintBoard(flipped)
 }
 
-func (g *Game) WhiteMove(move string) bool {
+func (g *Game) Move(move string) bool {
 	valid, origin, dest := parseMove(move)
-	slog.Info("valid parse", "valid", valid, "origin", origin, "dest", dest)
+	slog.Info("parse command", "valid", valid, "origin", origin, "dest", dest)
 	if !valid {
 		return false
 	}
@@ -34,15 +34,9 @@ func (g *Game) WhiteMove(move string) bool {
 	return true
 }
 
-func (g *Game) BlackMove(move string) bool {
-	valid, origin, dest := parseMove(move)
-	if !valid {
-		return false
-	}
-	g.board.move(origin, dest)
-	return true
+func (g *Game) SetStatus(stat turn) {
+	g.board.SetStatus(stat)
 }
-
 
 // TODO - promotion
 func parseMove(move string) (bool, int, int) {

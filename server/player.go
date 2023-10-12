@@ -36,12 +36,12 @@ func (p *player) Move(cmd string) bool {
 		if p.lob.game.Turn() == Game.BlackTurn {
 			return false
 		}
-		return p.lob.game.WhiteMove(cmd)
+		return p.lob.game.Move(cmd)
 	} else if (p.playerType == black) {
 		if p.lob.game.Turn() == Game.WhiteTurn {
 			return false
 		}
-		return p.lob.game.BlackMove(cmd)
+		return p.lob.game.Move(cmd)
 	}
 	return false
 }
