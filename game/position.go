@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"unicode"
+	"log/slog"
 
 	"github.com/williamjchen/terminalchess/magic"
 )
@@ -57,6 +58,22 @@ type position struct {
     halfMoveClock int
     fullMoveNumber int
     enPassant uint64 // en passant square
+
+
+	// STORES THE CURRENT TURN'S POSITIONS
+	pawnPos uint64
+	kingPos uint64
+	knightPos uint64
+	bishopPos uint64
+	rookPos uint64
+	queenPos uint64
+	e_kingPos uint64
+	e_pawnPos uint64
+	e_knightPos uint64
+	e_bishopPos uint64
+	e_rookPos uint64
+	e_queenPos uint64
+	allPieces uint64
 }
 
 func NewPosition(fen string) *position {
@@ -102,45 +119,48 @@ func (p *position) getAllPieces() uint64 {return p.colourBB[0] | p.colourBB[1]}
 func (p *position) move(origin, dest int) bool {
 	origin_pos := uint64(1) << origin
 	dest_pos := uint64(1) << dest
+	slog.Info("origin", "square", origin, "pos", origin_pos)
+	slog.Info("dest", "square", dest, "pos", dest_pos)
 	if p.validateMove(origin, dest) {
 		origin_piece := p.pieceAtSquare(origin)
+		slog.Info("original", "piece", origin_piece)
 		switch origin_piece {
 		case "P":
+			p.removeAt(dest, false)
 			p.movePiece(0, 0, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "N":
+			p.removeAt(dest, false)
 			p.movePiece(1, 0, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "B":
+			p.removeAt(dest, false)
 			p.movePiece(2, 0, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "R":
+			p.removeAt(dest, false)
 			p.movePiece(3, 0, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "Q":
+			p.removeAt(dest, false)
 			p.movePiece(4, 0, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "K":
+			p.removeAt(dest, false)
 			p.movePiece(5, 0, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "p":
+			p.removeAt(dest, true)
 			p.movePiece(0, 1, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "n":
+			p.removeAt(dest, true)
 			p.movePiece(1, 1, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "b":
+			p.removeAt(dest, true)
 			p.movePiece(2, 1, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "r":
+			p.removeAt(dest, true)
 			p.movePiece(3, 1, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "q":
+			p.removeAt(dest, true)
 			p.movePiece(4, 1, origin_pos, dest_pos)
-			p.removeAt(dest, true)
 		case "k":
-			p.movePiece(5, 1, origin_pos, dest_pos)
 			p.removeAt(dest, true)
+			p.movePiece(5, 1, origin_pos, dest_pos)
 		}
 
 		return true
@@ -182,73 +202,71 @@ func (p *position) removeAt(square int, white bool) {
 // This is used to generate all moves. Required for engine
 func (p *position) generateLegalMoves() []move {
 	var moves []move
-	var kingPos, pawnPos, knightPos, bishopPos, rookPos, queenPos, allPieces uint64
-	var e_kingPos, e_pawnPos, e_knightPos, e_bishopPos, e_rookPos, e_queenPos uint64
-
+	
 	if p.turn == WhiteTurn {
-		kingPos = p.getWhiteKing()
-		pawnPos = p.getWhitePawns()
-		knightPos = p.getWhiteKnights()
-		bishopPos = p.getWhiteBishops()
-		rookPos = p.getWhiteRooks()
-		queenPos = p.getWhiteQueens()
-		e_kingPos = p.getBlackKing()
-		e_pawnPos = p.getBlackPawns()
-		e_knightPos = p.getBlackKnights()
-		e_bishopPos = p.getBlackBishops()
-		e_rookPos = p.getBlackRooks()
-		e_queenPos = p.getBlackQueens()
-		allPieces = p.getWhitePieces()
+		p.kingPos = p.getWhiteKing()
+		p.pawnPos = p.getWhitePawns()
+		p.knightPos = p.getWhiteKnights()
+		p.bishopPos = p.getWhiteBishops()
+		p.rookPos = p.getWhiteRooks()
+		p.queenPos = p.getWhiteQueens()
+		p.e_kingPos = p.getBlackKing()
+		p.e_pawnPos = p.getBlackPawns()
+		p.e_knightPos = p.getBlackKnights()
+		p.e_bishopPos = p.getBlackBishops()
+		p.e_rookPos = p.getBlackRooks()
+		p.e_queenPos = p.getBlackQueens()
+		p.allPieces = p.getWhitePieces()
 	} else {
-		kingPos = p.getBlackKing()
-		pawnPos = p.getBlackPawns()
-		knightPos = p.getBlackKnights()
-		bishopPos = p.getBlackBishops()
-		rookPos = p.getBlackRooks()
-		queenPos = p.getBlackQueens()
-		e_kingPos = p.getWhiteKing()
-		e_pawnPos = p.getWhitePawns()
-		e_knightPos = p.getWhiteKnights()
-		e_bishopPos = p.getWhiteBishops()
-		e_rookPos = p.getWhiteRooks()
-		e_queenPos = p.getWhiteQueens()
-		allPieces = p.getBlackPieces()
+		p.kingPos = p.getBlackKing()
+		p.pawnPos = p.getBlackPawns()
+		p.knightPos = p.getBlackKnights()
+		p.bishopPos = p.getBlackBishops()
+		p.rookPos = p.getBlackRooks()
+		p.queenPos = p.getBlackQueens()
+		p.e_kingPos = p.getWhiteKing()
+		p.e_pawnPos = p.getWhitePawns()
+		p.e_knightPos = p.getWhiteKnights()
+		p.e_bishopPos = p.getWhiteBishops()
+		p.e_rookPos = p.getWhiteRooks()
+		p.e_queenPos = p.getWhiteQueens()
+		p.allPieces = p.getBlackPieces()
 	}
 
-	num_attackers, allowed_dests := p.numAttacks(p.turn, kingPos, e_kingPos, e_pawnPos, e_knightPos, e_bishopPos, e_rookPos, e_queenPos)
+	num_attackers, allowed_dests := p.numAttacks(p.turn, p.kingPos)
 	if num_attackers > 1 { // multiple check - only king moves
-		moves = append(moves, p.kingPushes(kingPos, allowed_dests)...) // king captures?
+		moves = append(moves, p.kingPushes(allowed_dests)...) // king captures?
 		return moves
 	} else if num_attackers == 1 { // single check
-		pinned := p.generatePinnedSquares(kingPos, e_rookPos, e_bishopPos, e_queenPos, allPieces)
+		pinned := p.generatePinnedSquares()
 		nonPinned := ^pinned
 
 		allowed_dests := nonPinned
-		moves = append(moves, p.pawnCaptures(pawnPos, nonPinned, allowed_dests)...)
-		moves = append(moves, p.pawnPushes(pawnPos, nonPinned, allowed_dests)...)
-		moves = append(moves, p.knightPushes(knightPos, nonPinned, allowed_dests)...)
-		moves = append(moves, p.rookPushes(rookPos, nonPinned, allowed_dests)...)
-		moves = append(moves, p.bishopPushes(bishopPos, nonPinned, allowed_dests)...)
-		moves = append(moves, p.queenPushes(queenPos, nonPinned, allowed_dests)...)
-		moves = append(moves, p.kingPushes(kingPos, allowed_dests)...)
+		moves = append(moves, p.pawnCaptures(nonPinned, allowed_dests)...)
+		moves = append(moves, p.pawnPushes(nonPinned, allowed_dests)...)
+		moves = append(moves, p.knightMoves(nonPinned, allowed_dests)...)
+		moves = append(moves, p.rookMoves(nonPinned, allowed_dests)...)
+		moves = append(moves, p.bishopMoves(nonPinned, allowed_dests)...)
+		moves = append(moves, p.queenMoves(nonPinned, allowed_dests)...)
+		moves = append(moves, p.kingPushes(allowed_dests)...)
 		return moves
 	}
 
 	// non-check moves
-	pinned := p.generatePinnedSquares(kingPos, e_rookPos, e_bishopPos, e_queenPos, allPieces)
+	pinned := p.generatePinnedSquares()
 	nonPinned := ^pinned
-	moves = append(moves, p.pawnCaptures(pawnPos, nonPinned, magic.Everything)...)
-	moves = append(moves, p.pawnPushes(pawnPos, nonPinned, magic.Everything)...)
-	moves = append(moves, p.knightPushes(knightPos, nonPinned, magic.Everything)...)
-	moves = append(moves, p.rookPushes(rookPos, nonPinned, magic.Everything)...)
-	moves = append(moves, p.bishopPushes(bishopPos, nonPinned, magic.Everything)...)
-	moves = append(moves, p.queenPushes(queenPos, nonPinned, magic.Everything)...)
-	moves = append(moves, p.kingPushes(kingPos, magic.Everything)...)
+	moves = append(moves, p.pawnCaptures(nonPinned, magic.Everything)...)
+	moves = append(moves, p.pawnPushes(nonPinned, magic.Everything)...)
+	moves = append(moves, p.knightMoves(nonPinned, magic.Everything)...)
+	moves = append(moves, p.rookMoves(nonPinned, magic.Everything)...)
+	moves = append(moves, p.bishopMoves(nonPinned, magic.Everything)...)
+	moves = append(moves, p.queenMoves(nonPinned, magic.Everything)...)
+	moves = append(moves, p.kingMoves(magic.Everything)...)
 
 	return moves
 }
 
-func (p *position) numAttacks(defender turn, kingPos, e_kingPos, e_pawnPos, e_knightPos, e_bishopPos, e_rookPos, e_queenPos uint64) (int, uint64) {
+func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	square := bits.TrailingZeros64(kingPos)
 	num_attackers := 0
 	var attackers_mask uint64 = 0
@@ -256,20 +274,20 @@ func (p *position) numAttacks(defender turn, kingPos, e_kingPos, e_pawnPos, e_kn
 	var attackers uint64 = 0
 	// pawns
 	if defender == WhiteTurn {
-		attackers = kingPos << 7
-		attackers |= kingPos << 9
+		attackers = p.kingPos << 7
+		attackers |= p.kingPos << 9
 	} else {
-		attackers = kingPos >> 7
-		attackers |= kingPos >> 9
+		attackers = p.kingPos >> 7
+		attackers |= p.kingPos >> 9
 	}
-	attackers &= e_pawnPos
+	attackers &= p.e_pawnPos
 	num_attackers += bits.OnesCount64(attackers)
 	attackers_mask |= attackers
 
 	// kings
 
 	// kights
-	attackers = magic.KnightMasks[square] & e_knightPos
+	attackers = magic.KnightMasks[square] & p.e_knightPos
 	num_attackers += bits.OnesCount64(attackers)
 	attackers_mask |= attackers
 
@@ -277,7 +295,7 @@ func (p *position) numAttacks(defender turn, kingPos, e_kingPos, e_pawnPos, e_kn
 	diag_blocked := magic.MagicBishopBlockerMasks[square] & p.getAllPieces()
 	diag_idx := magic.BishopHash(magic.Square(square), diag_blocked)
 	diag_ends := magic.MagicMovesBishop[square][diag_idx]
-	diag_attackers := diag_ends & (e_bishopPos | e_queenPos)
+	diag_attackers := diag_ends & (p.e_bishopPos | p.e_queenPos)
 	num_attackers += bits.OnesCount64(diag_attackers)
 	attackers_mask |= diag_attackers
 
@@ -285,21 +303,21 @@ func (p *position) numAttacks(defender turn, kingPos, e_kingPos, e_pawnPos, e_kn
 	straight_blocked := magic.MagicRookBlockerMasks[square] & p.getAllPieces()
 	straight_idx := magic.RookHash(magic.Square(square), straight_blocked)
 	straight_ends := magic.MagicMovesRook[square][straight_idx]
-	straight_attackers := straight_ends & (e_rookPos | e_queenPos)
+	straight_attackers := straight_ends & (p.e_rookPos | p.e_queenPos)
 	num_attackers += bits.OnesCount64(straight_attackers)
 	attackers_mask |= straight_attackers
 
 	return num_attackers, attackers_mask
 }
 
-func (p *position) generatePinnedSquares (origin, e_rookPos, e_bishopPos, e_queenPos, myPieces uint64) uint64 {
-	kingSquare := bits.TrailingZeros64(origin)
+func (p *position) generatePinnedSquares () uint64 {
+	kingSquare := bits.TrailingZeros64(p.kingPos)
 	var opponent_slide uint64 = 0
 	var king_slide uint64 = 0
 	king_slide = p.generateDiagonalSquares(kingSquare, p.getAllPieces()) | p.generateStraightSquares(kingSquare, p.getAllPieces())
 
 	// rook + queen
-	op := e_rookPos | e_queenPos
+	op := p.e_rookPos | p.e_queenPos
 	for op != 0 {
 		rookIdx := bits.TrailingZeros64(op)
 		op &= op - 1
@@ -309,7 +327,7 @@ func (p *position) generatePinnedSquares (origin, e_rookPos, e_bishopPos, e_quee
 	}
 
 	// bishop + queen
-	op = e_bishopPos | e_queenPos
+	op = p.e_bishopPos | p.e_queenPos
 	for op != 0 {
 		bishopIdx := bits.TrailingZeros64(op)
 		op &= op - 1
@@ -318,7 +336,7 @@ func (p *position) generatePinnedSquares (origin, e_rookPos, e_bishopPos, e_quee
 		opponent_slide |= targs
 	}
 
-	return king_slide & opponent_slide & myPieces
+	return king_slide & opponent_slide & p.allPieces
 }
 
 func (p *position) generateDiagonalSquares(origin int, pieces uint64) uint64 {
@@ -333,31 +351,70 @@ func (p *position) generateStraightSquares(origin int, pieces uint64) uint64 {
 	return magic.MagicMovesRook[origin][index]
 }
 
-func (p *position) kingPushes(king uint64, dest uint64) []move{
+// FOR FOLLOWING FUNCTIONS- allowed is non-pinned squares and dest is allowed locations to move to
+
+// sans castling (used when under check)
+func (p *position) kingPushes(dest uint64) []move{
+	moves := []move{}
+	kingSquare := bits.TrailingZeros64(p.kingPos)
+	temp := p.kingPos
+	p.kingPos = 0
+	if p.turn == WhiteTurn {
+		p.colourBB[0] &= ^temp
+	} else {
+		p.colourBB[1] &= ^temp
+	}
+
+
+	targets := magic.KingMasks[kingSquare]
+	for targets != 0 {
+		target := bits.TrailingZeros64(targets)
+		targets &= targets - 1
+
+		if n, _:= p.numAttacks(p.turn, uint64(1) << target); n > 0 {
+			continue
+		}
+
+		var move move
+		move.create(kingSquare, target)
+		moves = append(moves, move)
+	}
+
+	if p.turn == WhiteTurn {
+		p.colourBB[0] |= temp
+	} else {
+		p.colourBB[1] |= temp
+	}
+	p.kingPos = temp
+	return moves
+}
+
+// with castling
+func (p *position) kingMoves(dest uint64) []move{
 	return []move{}
 }
 
-func (p *position) pawnPushes(pawns, allowed, dest uint64) []move{
+func (p *position) pawnPushes(allowed, dest uint64) []move{
 	return []move{}
 }
 
-func (p *position) pawnCaptures(pawns, allowed, dest uint64) []move{
+func (p *position) pawnCaptures(allowed, dest uint64) []move{
 	return []move{}
 }
 
-func (p *position) knightPushes(knights, allowed, dest uint64) []move{
+func (p *position) knightMoves(allowed, dest uint64) []move{
 	return []move{}
 }
 
-func (p *position) bishopPushes(bishops, allowed, dest uint64) []move {
+func (p *position) bishopMoves(allowed, dest uint64) []move {
 	return []move{}
 }
 
-func (p *position) rookPushes(rook, allowed, dest uint64) []move{
+func (p *position) rookMoves(allowed, dest uint64) []move{
 	return []move{}
 }
 
-func (p *position) queenPushes(queen, allowed, dest uint64) []move{
+func (p *position) queenMoves(allowed, dest uint64) []move{
 	return []move{}
 }
 
@@ -439,7 +496,7 @@ func (p *position) loadPosition(fen string) error {
 }
 
 func (p *position) pieceAtSquare(square int) string {
-	rank := square / 8
+	rank := (square / 8) + 1
 	file := square % 8 + 1
 	return p.pieceAtPosition(rank, file)
 }

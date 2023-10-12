@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log/slog"
 	"strings"
 )
 
@@ -25,6 +26,7 @@ func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at b
 
 func (g *Game) WhiteMove(move string) bool {
 	valid, origin, dest := parseMove(move)
+	slog.Info("move", "valid", valid, "origin", origin, "dest", dest)
 	if !valid {
 		return false
 	}
@@ -41,6 +43,8 @@ func (g *Game) BlackMove(move string) bool {
 	return true
 }
 
+
+// TODO - promotion
 func parseMove(move string) (bool, int, int) {
 	move = strings.ToLower(move)
 	if len(move) >= 4 {

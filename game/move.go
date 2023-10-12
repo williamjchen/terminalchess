@@ -19,3 +19,8 @@ func (m *move) origin() int{
 func (m *move) promotion() int{
 	return int((*m & 0x7000) >> 12)
 }
+
+func (m *move) create(from, to int) {
+	*m = *m & ^(move(0xFC0)) | (move(from) << 6)
+	*m = *m & ^(move(0x3F)) | move(to)
+}
