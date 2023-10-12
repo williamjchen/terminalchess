@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	Game "github.com/williamjchen/terminalchess/game"
 )
 
@@ -30,6 +31,7 @@ func NewPlayer(com *commonModel) *player {
 }
 
 func (p *player) Move(cmd string) bool {
+	slog.Info("move", "cmd", cmd)
 	if (p.playerType == white) {
 		if p.lob.game.Turn() == Game.BlackTurn {
 			return false

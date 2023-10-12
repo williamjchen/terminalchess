@@ -26,7 +26,7 @@ type gameModel struct {
 
 func NewGame(com *commonModel) *gameModel {
 	ti := textinput.New()
-	ti.Placeholder = "Enter move in algebraic notation..."
+	ti.Placeholder = "Enter move in long algebraic notation ex. e2e4 | e1g1 | e7e8q ..."
 	ti.CharLimit = 5
 	ti.Width = 20
 
@@ -91,8 +91,9 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
+			val := m.textinput.Value()
 			m.textinput.Reset()
-			return m, sendMove("", m)
+			return m, sendMove(val, m)
 		case "ctrl+f":
 			m.common.player.Flip()
 			return m, cmd

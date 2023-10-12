@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/williamjchen/terminalchess/magic"
 	"fmt"
 	"os"
 	"errors"
@@ -45,6 +44,7 @@ func NewServer(path, host string, port int) (*Server, error){
 	server.srv = s
 
 	magic.Init() // want to initalize magic bitboadrs once
+	slog.Info("Done generating")
 
 	return &server, nil
 }
