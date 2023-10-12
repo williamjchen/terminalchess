@@ -105,15 +105,15 @@ func (m *infoModel) View(flipped bool) string {
 	m.table.Data(data)
 
 	var col lipgloss.Style
-	if m.common.player.playerType == white && m.common.player.lob.status == whiteWin ||  m.common.player.playerType == black && m.common.player.lob.status == blackWin {
+	if m.common.player.playerType == white && m.common.player.lob.Status() == whiteWin ||  m.common.player.playerType == black && m.common.player.lob.Status() == blackWin {
 		col = green
-	} else if m.common.player.playerType == white && m.common.player.lob.status == blackWin || m.common.player.playerType == black && m.common.player.lob.status == whiteWin {
+	} else if m.common.player.playerType == white && m.common.player.lob.Status() == blackWin || m.common.player.playerType == black && m.common.player.lob.Status() == whiteWin {
 		col = red
 	} else {
 		col = lipgloss.NewStyle().Foreground(lipgloss.Color("254"))
 	}
 
-	switch m.common.player.lob.status {
+	switch m.common.player.lob.Status() {
 	case inProgres:
 		statusMessage = ""
 	case whiteWin:

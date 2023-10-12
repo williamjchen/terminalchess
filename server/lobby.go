@@ -58,6 +58,22 @@ func (l *lobby) End() {
 	l.SendMsgEveryone(finishMsg(2))
 }
 
+func (l *lobby) Status() gameState{
+	switch l.game.Turn() {
+	case Game.WhiteTurn:
+		l.status = inProgres
+	case Game.BlackTurn:
+		l.status = inProgres
+	case Game.WhiteMate:
+		l.status = whiteWin
+	case Game.BlackMate:
+		l.status = blackWin
+	case Game.Stalemate:
+		l.status = stalemate
+	}
+	return l.status
+}
+
 func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if black, 2 if spectator
 	if s.User() != "" {
 		p.name = s.User()
@@ -77,7 +93,6 @@ func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if
 	}
 
 	slog.Info("Player added", "lobby id:", l.id, "type:", p.playerType, "name:", p.name)
-
 }
 
 func (l *lobby) RemovePlayer(p *player) {
