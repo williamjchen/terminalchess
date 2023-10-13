@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	Game "github.com/williamjchen/terminalchess/game"	
+
+	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -51,21 +53,35 @@ func sendMove(move string, m *gameModel) tea.Cmd {
 }
 
 func (m *gameModel) Init() tea.Cmd {
+	if !m.join.idInput.Focused() {
+		cmd := tea.Batch(m.join.idInput.Cursor.SetMode(cursor.CursorBlink),
+				m.join.idInput.Focus(),
+			)
+		return cmd
+	}
 	return nil
 }
 
 func (m *gameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.common.player.lob != nil {
-		return gameUpdate(msg, m)
+		var cmd tea.Cmd
+		if !m.textinput.Focused() {
+			cmd = tea.Batch(m.textinput.Cursor.SetMode(cursor.CursorBlink),
+					m.textinput.Focus(),
+				)
+		}
+		m2, cmd2 := gameUpdate(msg, m)
+		return m2, tea.Batch(cmd, cmd2)
 	}
 
+	var cmd tea.Cmd
 	switch m.common.choice {
 	case m.common.choices[1]: // join
 		j, cmd := m.join.Update(msg)
 		m.join = j.(*joinModel)
-		return m, cmd
+		return m, tea.Batch(cmd)
 	default:
-		return m, nil
+		return m, cmd
 	}
 }
 
@@ -83,8 +99,6 @@ func (m *gameModel) View() string {
 }
 
 func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
-	m.textinput.Focus()
-
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -116,6 +130,7 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 func gameView(m *gameModel) string {
 	s := strings.Builder{}
 
+	s.WriteString("\n")
 	s.WriteString(m.common.player.lob.game.PrintBoard(m.common.player.flipped))
 	s.WriteString("\n\n")
 	

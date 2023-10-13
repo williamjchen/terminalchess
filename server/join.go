@@ -1,8 +1,8 @@
 package server
 
 import (
-	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -39,26 +39,21 @@ func getLobby(id string, srv *Server) tea.Cmd {
 }
 
 func (m joinModel) Init() tea.Cmd {
+	m.idInput.Cursor.BlinkSpeed = time.Second
     return nil
 }
 
 func (m *joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m.idInput.Focus()
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String(){
-		case "esc", "ctrl+c":
-			return m, tea.Quit
+		switch msg.String() {
 		case "enter":
 			s := m.idInput.Value()
 			m.idInput.Reset()
 			return m, getLobby(s, m.common.srv)
-		default:
-			var cmd tea.Cmd
-			slog.Info("blink")
-			m.idInput, cmd = m.idInput.Update(msg)
-			return m, tea.Batch(textinput.Blink, cmd)
-		} // switch KeyMsg
+		}
 
 	case lobMsg:
 		if msg == nil {
@@ -74,12 +69,10 @@ func (m *joinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			l.SendMsg(m.common.player, updateMsg{})
 			return m, nil
 		}
+	} 
 
-	case errMsg:
-		return m, nil
-
-	} // switch msg
-	return m, nil
+	m.idInput, cmd = m.idInput.Update(msg)
+	return m, cmd
 }
 
 func (m *joinModel) View() string {

@@ -86,12 +86,11 @@ func (m *parentModel) Init() tea.Cmd {
 func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		var cmd tea.Cmd
-		k := msg.String()
-		if k == "esc" || k == "ctrl+c" {
-			cmd = tea.Quit
+		switch msg.String() {
+		case "esc", "ctrl+c":
 			m.common.player.lob.RemovePlayer(m.common.player)
-			return m, cmd
-		} else if k == "ctrl+n" {
+			return m, tea.Quit
+		case "ctrl+n":
 			m.common.player.lob.RemovePlayer(m.common.player)
 			m.Reset()
 			return m, cmd
@@ -105,12 +104,14 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch m.state{
 	case showMenu:
+		var cmd2 tea.Cmd
 		men, cmd := m.menu.Update(msg)
 		m.menu = men.(*menuModel)
 		if m.common.chosen {
 			m.state = showGame
+			cmd2 = m.game.Init()
 		}
-		return m, cmd
+		return m, tea.Batch(cmd, cmd2)
 	case showGame:
 		g, cmd := m.game.Update(msg)
 		m.game = g.(*gameModel)
