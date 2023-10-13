@@ -19,5 +19,8 @@ ssh terminalchess.com
 ![in game](./assets/ingame.jpg)
 ![loser](./assets/loser.jpg)
 
+### Resources
+- [generating chess moves](https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/)
+- [magic bitboards](https://analog-hors.github.io/site/magic-bitboards/)
 ### License
 Distributed under MIT License. See [LICENSE](./LICENSE) for more information.
