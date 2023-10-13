@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/charmbracelet/lipgloss"
 	"log/slog"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -33,9 +34,11 @@ type parentModel struct {
 	common *commonModel
 	menu *menuModel
 	game *gameModel
+	height int
+	width int
 }
 
-func GetModelOption(s ssh.Session, options []string, server *Server, sess ssh.Session) {
+func GetModelOption(s ssh.Session, options []string, server *Server, sess ssh.Session) *tea.Program {
 	model := Model(options, server, sess)
     p := tea.NewProgram(
         model,
@@ -43,11 +46,12 @@ func GetModelOption(s ssh.Session, options []string, server *Server, sess ssh.Se
         tea.WithOutput(s),
     )
 	model.common.program = p
-    _, err := p.Run()
-    if err != nil {
-        slog.Error("failed to run menu", err)
-        return
-    }
+	return p
+    // _, err := p.Run()
+    // if err != nil {
+    //     slog.Error("failed to run menu", err)
+    //     return
+    // }
 }
 
 func Model(options []string, server *Server, sess ssh.Session) *parentModel {
@@ -103,7 +107,8 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		slog.Info("change size", "width", msg.Width, "height", msg.Height)
+		m.height = msg.Height
+		m.width = msg.Width
 	}
 
 	switch m.state{
@@ -125,11 +130,12 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *parentModel) View() string {
+	s := lipgloss.NewStyle().Height(m.height).Width(m.width)
 	switch m.state{
 	case showMenu:
-		return m.menu.View()
+		return s.Render(m.menu.View())
 	case showGame:
-		return m.game.View()
+		return s.Render(m.game.View())
 	}
 	return ""
 }
