@@ -18,3 +18,9 @@ To move pieces, use [long algebraic notation](https://en.wikipedia.org/wiki/Alge
 ![begin](./assets/begin.jpg)
 ![in game](./assets/ingame.jpg)
 ![loser](./assets/loser.jpg)
+
+> [!NOTE]  
+> Highlights information that users should take into account, even when skimming.
+
+[!NOTE]  
+Highlights information that users should take into account, even when skimming.
