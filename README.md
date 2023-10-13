@@ -4,7 +4,7 @@ Play chess in your terminal.
 ### Play
 You can play by running:
 
-```
+```sh
 ssh terminalchess.com
 ```
 
@@ -18,3 +18,6 @@ ssh terminalchess.com
 ![begin](./assets/begin.jpg)
 ![in game](./assets/ingame.jpg)
 ![loser](./assets/loser.jpg)
+
+### License
+Distributed under MIT License. See [LICENSE](./LICENSE) for more information.

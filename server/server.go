@@ -12,6 +12,7 @@ import (
 
 	"github.com/williamjchen/terminalchess/magic"
 
+	"github.com/charmbracelet/wish/logging"
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/ssh"
 )
@@ -32,10 +33,13 @@ func NewServer(path, host string, port int) (*Server, error){
 		mng: NewManager(),
 	}
 	s, err := wish.NewServer(
+		ssh.PasswordAuth(passwordHandler),
+		ssh.PublicKeyAuth(publicKeyHandler),
 		wish.WithAddress(fmt.Sprintf("%s:%d", host, port)),
 		wish.WithHostKeyPath(path),
 		wish.WithMiddleware(
 			tui(&server),
+			logging.Middleware(),
 		),
 	)
 	if err != nil {
@@ -69,4 +73,12 @@ func (s *Server) Start() {
 	if err := s.srv.Shutdown(ctx); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
 		slog.Error("could not stop server", "error", err)
 	}
+}
+
+func passwordHandler(ctx ssh.Context, password string) bool {
+	return true
+}
+
+func publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
+	return true
 }
