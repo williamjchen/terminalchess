@@ -13,7 +13,7 @@ COPY stockfish/ ./stockfish
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/server
 
-FROM scratch
+FROM alpine:3.17
 
 COPY --from=build /bin/server /bin/server
 
