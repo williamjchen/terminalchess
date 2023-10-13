@@ -184,7 +184,6 @@ func (p *position) move(origin, dest int) bool {
 			}
 			slog.Info("checkmate", "status", p.turn)
 		}
-		slog.Info("next moves", "moves", p.nextTurnMoves)
 
 		return true
 	}
@@ -268,7 +267,7 @@ func (p *position) generateLegalMoves() []move {
 	} else if num_attackers == 1 { // single check
 		pinned := p.generatePinnedSquares()
 		nonPinned := ^pinned
-		slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
+		//slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
 
 		moves = append(moves, p.pawnCaptures(nonPinned, allowed_dests)...)
 		moves = append(moves, p.pawnPushes(nonPinned, allowed_dests)...)
@@ -284,7 +283,7 @@ func (p *position) generateLegalMoves() []move {
 	// non-check moves
 	pinned := p.generatePinnedSquares()
 	nonPinned := ^pinned
-	slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
+	//slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
 
 	moves = append(moves, p.pawnCaptures(nonPinned, magic.Everything)...)
 	moves = append(moves, p.pawnPushes(nonPinned, magic.Everything)...)
@@ -388,7 +387,7 @@ func (p *position) generatePinnedSquares () uint64 {
 	var opponent_slide uint64 = 0
 	var king_slide uint64 = 0
 	king_slide = p.generateDiagonalSquares(kingSquare, p.getAllPieces()) | p.generateStraightSquares(kingSquare, p.getAllPieces())
-	slog.Info("generate pinned", "king", kingSquare, "slide", king_slide)
+	//slog.Info("generate pinned", "king", kingSquare, "slide", king_slide)
 	// rook + queen
 	op := p.e_rookPos | p.e_queenPos
 	for op != 0 {
@@ -415,7 +414,7 @@ func (p *position) generatePinnedSquares () uint64 {
 func (p *position) generateDiagonalSquares(origin int, pieces uint64) uint64 {
 	blockers := magic.MagicBishopBlockerMasks[origin] & pieces
 	index := magic.BishopHash(magic.Square(origin), blockers)
-	slog.Info("diagonal", "origin", origin, "pieces", pieces, "blockers", blockers, "moves", magic.MagicMovesBishop[origin][index])
+	//slog.Info("diagonal", "origin", origin, "pieces", pieces, "blockers", blockers, "moves", magic.MagicMovesBishop[origin][index])
 	return magic.MagicMovesBishop[origin][index]
 }
 
@@ -574,7 +573,7 @@ func (p *position) knightMoves(allowed, dest uint64) []move{
 		knight := bits.TrailingZeros64(knights)
 		knights &= knights - 1
 		targets := magic.KnightMasks[knight] & dest
-		slog.Info("knightMoves", "target", targets, "dest", dest)
+		//slog.Info("knightMoves", "target", targets, "dest", dest)
 		moves = append(moves, generateMoves(knight, targets)...)
 	}
 	return moves
