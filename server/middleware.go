@@ -6,10 +6,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/ssh"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 func tui(server *Server) wish.Middleware {
 	return func(sh ssh.Handler) ssh.Handler {
+		lipgloss.SetColorProfile(termenv.ANSI256)
 		return func(s ssh.Session) {
 			slog.Info("middlware")
 		

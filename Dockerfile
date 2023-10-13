@@ -15,7 +15,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/server
 
 FROM scratch
 
-COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /bin/server /bin/server
 
 EXPOSE 2324
