@@ -30,8 +30,7 @@ func (g *Game) Move(move string) bool {
 	if !valid {
 		return false
 	}
-	g.board.move(origin, dest)
-	return true
+	return g.board.move(origin, dest)
 }
 
 func (g *Game) SetStatus(stat turn) {

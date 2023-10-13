@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/charmbracelet/lipgloss"
-	"log/slog"
 
 	tea "github.com/charmbracelet/bubbletea"
     "github.com/charmbracelet/ssh"
