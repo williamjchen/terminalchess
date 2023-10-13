@@ -88,10 +88,14 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		switch msg.String() {
 		case "esc", "ctrl+c":
-			m.common.player.lob.RemovePlayer(m.common.player)
+			if m.common.player.lob != nil {
+				m.common.player.lob.RemovePlayer(m.common.player)
+			}
 			return m, tea.Quit
 		case "ctrl+n":
-			m.common.player.lob.RemovePlayer(m.common.player)
+			if m.common.player.lob != nil {
+				m.common.player.lob.RemovePlayer(m.common.player)
+			}
 			m.Reset()
 			return m, cmd
 		}
