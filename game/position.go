@@ -547,6 +547,7 @@ func (p *position) pawnCaptures(allowed, dest uint64) []move{
 	var left_mod, right_mod = -7, -9
 	targets |= p.enPassant
 	targets |= p.e_allPieces
+	targets &= dest
 
 	if p.turn == WhiteTurn {
 		right = p.pawnPos << 9 & magic.NotAFile & targets
