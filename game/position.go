@@ -62,6 +62,7 @@ type position struct {
     enPassant uint64 // en passant square
 
 	nextTurnMoves []move
+	moveHistory []move
 
 	// STORES THE CURRENT TURN'S POSITIONS
 	pawnPos uint64
@@ -133,6 +134,9 @@ func (p *position) move(origin, dest int) bool {
 	if p.validateMove(origin, dest) {
 		origin_piece := p.pieceAtSquare(origin)
 		slog.Info("valid move", "piece", origin_piece)
+		var newMove move
+		newMove.create(origin, dest)
+		p.moveHistory = append(p.moveHistory, newMove)
 		switch origin_piece {
 		case "P":
 			p.removeAt(dest, false)
@@ -728,6 +732,16 @@ func (p *position) loadPosition(fen string) error {
 
 
 	return nil
+}
+
+func (p *position) getMoveHistory() []string {
+	moves := []string{}
+	for _, move := range p.moveHistory {
+		from := move.origin()
+		dest := move.dest()
+		moves = append(moves, fmt.Sprintf("%s%d%s%d", string('a' + from % 8), from / 8 + 1, string('a' + dest % 8), dest / 8 + 1))
+	}
+	return moves
 }
 
 func (p *position) pieceAtSquare(square int) string {
