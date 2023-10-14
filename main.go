@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"context"
 	"os"
@@ -15,7 +14,7 @@ import (
 
 func connect() *mongo.Collection {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://root:%s@cluster0.cn22igl.mongodb.net/?retryWrites=true&w=majority", os.Getenv("MONGO_PASS"))).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(os.Getenv("MONGO_STRING")).SetServerAPIOptions(serverAPI)
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
