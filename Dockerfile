@@ -15,6 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/server
 
 FROM alpine:3.17
 
+COPY .ssh/ /bin
 COPY --from=build /bin/server /bin/server
 
 EXPOSE 2324

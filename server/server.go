@@ -11,10 +11,12 @@ import (
 	"syscall"
 
 	"github.com/williamjchen/terminalchess/magic"
+	"github.com/williamjchen/terminalchess/models"
 
 	"github.com/charmbracelet/wish/logging"
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/ssh"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Server struct {
@@ -23,14 +25,16 @@ type Server struct {
 	port int
 	mng *manager
 	srv *ssh.Server
+	db *models.Model
 }
 
-func NewServer(path, host string, port int) (*Server, error){
+func NewServer(path, host string, port int, c1 *mongo.Collection) (*Server, error){
 	server := Server{
 		host: host,
 		path: path,
 		port: port,
 		mng: NewManager(),
+		db: models.CreateModel(c1),
 	}
 	s, err := wish.NewServer(
 		ssh.PasswordAuth(passwordHandler),
