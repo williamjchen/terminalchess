@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/williamjchen/terminalchess/models"
 	Game "github.com/williamjchen/terminalchess/game"	
 
 	"github.com/charmbracelet/ssh"
@@ -28,6 +29,7 @@ type lobby struct {
 	timer *time.Timer
 	done chan string
 	bot *player
+	gameModel *models.Game
 }
 
 func NewLobby(done chan string, id string) *lobby {
@@ -42,6 +44,7 @@ func NewLobby(done chan string, id string) *lobby {
 		timer: timer,
 		done: done,
 		bot: nil,
+		gameModel: &models.Game{},
 	}
 	
 	go func() {
@@ -95,10 +98,14 @@ func (l *lobby) AddBot(b bot) {
 		l.p1 = p
 		p.playerType = white
 		l.p1Pres = true
+		l.gameModel.Player1Name = p.name
+		p.common = l.p2.common
 	} else if l.p2 == nil {
 		l.p2 = p
 		p.playerType = black
 		l.p2Pres = true
+		l.gameModel.Player2Name = p.name
+		p.common = l.p1.common
 	} 
 
 	slog.Info("Bot added", "lobby id:", l.id, "type:", p.playerType, "name:", p.name)
@@ -113,14 +120,17 @@ func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if
 		l.p1 = p
 		p.playerType = white
 		l.p1Pres = true
+		l.gameModel.Player1Name = p.name
 	} else if l.p2 == nil {
 		l.p2 = p
 		p.playerType = black
 		l.p2Pres = true
+		l.gameModel.Player2Name = p.name
 	} else {
 		l.specs = append(l.specs, p)
 		p.playerType = spec
 	}
+	go p.common.srv.db.Games.Update(l.gameModel)
 
 	slog.Info("Player added", "lobby id:", l.id, "type:", p.playerType, "name:", p.name)
 }
@@ -164,14 +174,18 @@ func (l *lobby) sendMove(move string, p *player) bool {
 	}
 
 	status := p.Move(move)
+	if (status) {
+		l.gameModel.Moves = append(l.gameModel.Moves, move)
+		go p.common.srv.db.Games.Update(l.gameModel)
+	}
 	l.SendMsg(p, updateMsg{})
 	return status
 }
 
 func (l *lobby) SendMsg(p *player, msg interface{}) { // sends message to other player that's not the argument
-	if l.p2 != nil && l.p1 == p && l.p2.common != nil && l.p2.common.program != nil {
+	if l.p2 != nil && l.p1 == p && l.p2 != l.bot {
 		l.p2.common.program.Send(msg)
-	} else if l.p1 != nil && l.p2 == p && l.p1.common != nil && l.p1.common.program != nil {
+	} else if l.p1 != nil && l.p2 == p && l.p1 != l.bot {
 		l.p1.common.program.Send(msg)
 	}
 	l.SendMsgToSpectators(msg)

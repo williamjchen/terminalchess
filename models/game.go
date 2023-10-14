@@ -3,10 +3,12 @@ package models
 import (
 	"time"
 	"context"
+	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
     "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Game struct {
@@ -29,8 +31,19 @@ func (g *GameModel) Insert(game *Game) error {
 	return err
 }
 
+func (g *GameModel) Update(game *Game) error {
+	filter := bson.D{primitive.E{Key: "code", Value: game.Code}}
+	update := bson.D{primitive.E{Key: "$set", Value: bson.D{
+		primitive.E{Key: "moves", Value: game.Moves},
+	}}}
+	opts := options.FindOneAndUpdate().SetUpsert(true)
+	err := g.DB.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(game)
+	slog.Error("failed to update", "error", err)
+	return err
+}
+
 func (g *GameModel) Get(id string) (*Game, error) {
-	objectId, err := primitive.ObjectIDFromHex("5b9223c86486b341ea76910c")
+	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}

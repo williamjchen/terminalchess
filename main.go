@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"context"
+	"os"
 
 	"github.com/williamjchen/terminalchess/server"	
 
@@ -13,7 +15,7 @@ import (
 
 func connect() *mongo.Collection {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI("mongodb+srv://root:q3O3Ab4ZPNaERvRb@cluster0.cn22igl.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://root:%s@cluster0.cn22igl.mongodb.net/?retryWrites=true&w=majority", os.Getenv("MONGO_PASS"))).SetServerAPIOptions(serverAPI)
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
@@ -25,7 +27,7 @@ func connect() *mongo.Collection {
 		}
 	}()
 	// Send a ping to confirm a successful connection
-	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
+	if err := client.Database("chess").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
 		panic(err)
 	}
 	slog.Info("Pinged your deployment. You successfully connected to MongoDB!")
