@@ -2,6 +2,7 @@ package server
 
 import (
 	"strings"
+	"log/slog"
 
 	Game "github.com/williamjchen/terminalchess/game"	
 
@@ -118,6 +119,13 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 
 	case chessMsg:
 		m.validMove = bool(msg)
+		if m.validMove && m.common.player.lob.bot != nil {
+			botMove :=  m.common.player.lob.bot.bot.GetMove()
+			slog.Info("Bot move", "move", botMove, "bot", m.common.player.lob.bot)
+			go func() {
+				m.common.player.lob.sendMove(botMove, m.common.player.lob.bot)
+			}()
+		}
 
 	case updateMsg:
 		return m, nil

@@ -27,6 +27,7 @@ type lobby struct {
 	game *Game.Game
 	timer *time.Timer
 	done chan string
+	bot *player
 }
 
 func NewLobby(done chan string, id string) *lobby {
@@ -40,6 +41,7 @@ func NewLobby(done chan string, id string) *lobby {
 		game: g,
 		timer: timer,
 		done: done,
+		bot: nil,
 	}
 	
 	go func() {
@@ -80,6 +82,26 @@ func (l *lobby) SetStatus(stat gameState) {
 	case blackWin:
 		l.game.SetStatus(Game.BlackMate)
 	}
+}
+
+func (l *lobby) AddBot(b bot) {
+	p := &player{}
+	p.name = b.Name()
+	l.bot = p
+	p.bot = b
+	p.lob = l
+	
+	if l.p1 == nil {
+		l.p1 = p
+		p.playerType = white
+		l.p1Pres = true
+	} else if l.p2 == nil {
+		l.p2 = p
+		p.playerType = black
+		l.p2Pres = true
+	} 
+
+	slog.Info("Bot added", "lobby id:", l.id, "type:", p.playerType, "name:", p.name)
 }
 
 func (l *lobby) AddPlayer(s ssh.Session, p *player) { // return 0 if white, 1 if black, 2 if spectator
@@ -137,7 +159,7 @@ func (l *lobby) sendMove(move string, p *player) bool {
 	if p != l.p1 && p != l.p2 {
 		return false
 	}
-	if p.lob.Status() != inProgres {
+	if l.Status() != inProgres {
 		return false
 	}
 
@@ -147,9 +169,9 @@ func (l *lobby) sendMove(move string, p *player) bool {
 }
 
 func (l *lobby) SendMsg(p *player, msg interface{}) { // sends message to other player that's not the argument
-	if l.p2 != nil && l.p1 == p {
+	if l.p2 != nil && l.p1 == p && l.p2.common != nil && l.p2.common.program != nil {
 		l.p2.common.program.Send(msg)
-	} else if l.p1 != nil && l.p2 == p {
+	} else if l.p1 != nil && l.p2 == p && l.p1.common != nil && l.p1.common.program != nil {
 		l.p1.common.program.Send(msg)
 	}
 	l.SendMsgToSpectators(msg)

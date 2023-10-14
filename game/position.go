@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"unicode"
 	"log/slog"
+	"time"
+	"math/rand"
 
 	"github.com/williamjchen/terminalchess/magic"
 )
@@ -209,6 +211,14 @@ func (p *position) movePiece(pieceIndex, colourIndex int, origin, dest uint64) {
 	p.typeBB[pieceIndex] |= dest // add new
 	p.colourBB[colourIndex] &= ^origin // remove origin
 	p.colourBB[colourIndex] |= dest // add new
+}
+
+func (p *position) getRandomMove() string {
+	rand.Seed(time.Now().Unix())
+	move := p.nextTurnMoves[rand.Intn(len(p.nextTurnMoves))]
+	from := move.origin()
+	dest := move.dest()
+	return fmt.Sprintf("%s%d%s%d", string('a' + from % 8), from / 8 + 1, string('a' + dest % 8), dest / 8 + 1)
 }
 
 func (p *position) removeAt(square int, white bool) {

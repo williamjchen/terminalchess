@@ -16,7 +16,7 @@ func tui(server *Server) wish.Middleware {
 		return func(s ssh.Session) {
 			slog.Info("middlware")
 		
-			options := []string{"Stockfish", "Join Room", "Create Room"}
+			options := []string{"Stockfish", "Join Room", "Create Room", "Basic AI"}
 			p := GetModelOption(s, options, server, s)
 			if p != nil {
 				_, windowChanges, _ := s.Pty()

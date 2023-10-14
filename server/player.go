@@ -18,6 +18,7 @@ type player struct {
 	playerType playerType
 	lob *lobby
 	flipped bool
+	bot bot
 }
 
 func NewPlayer(com *commonModel) *player {
@@ -25,6 +26,7 @@ func NewPlayer(com *commonModel) *player {
 		name: "Anonymous",
 		common: com,
 		lob: nil,
+		bot: nil,
 	}
 
 	return &p
@@ -32,6 +34,9 @@ func NewPlayer(com *commonModel) *player {
 
 func (p *player) Move(cmd string) bool {
 	slog.Info("move", "cmd", cmd)
+	if p.bot != nil {
+		return p.lob.game.Move(cmd)
+	}
 	if (p.playerType == white) {
 		if p.lob.game.Turn() == Game.BlackTurn {
 			return false

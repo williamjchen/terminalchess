@@ -37,6 +37,10 @@ func (g *Game) SetStatus(stat turn) {
 	g.board.SetStatus(stat)
 }
 
+func (g *Game) GetRandomMove() string {
+	return g.board.getRandomMove()
+}
+
 // TODO - promotion
 func parseMove(move string) (bool, int, int) {
 	move = strings.ToLower(move)

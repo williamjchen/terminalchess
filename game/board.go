@@ -53,6 +53,10 @@ func (b *board) move(origin, dest int) bool{
 	return b.pos.move(origin, dest)
 }
 
+func (b *board) getRandomMove() string {
+	return b.pos.getRandomMove()
+}
+
 func (b *board) buildBorderRow(row int) string {
 	var leftEdge, middle, rightEdge string
 	switch row{

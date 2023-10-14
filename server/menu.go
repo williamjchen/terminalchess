@@ -38,15 +38,30 @@ func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.common.choice {
 			case m.common.choices[0]: // stockfish
 				l := m.common.srv.mng.CreateLobby()
-				m.common.player.lob = l
-				return m, nil
-			case m.common.choices[2]: // create
-				l := m.common.srv.mng.CreateLobby()
-				slog.Info("Create lobby", "id:", l.id)
+				slog.Info("Create stockfish lobby", "id:", l.id)
 
 				l.AddPlayer(m.common.sess, m.common.player)
 				m.common.player.lob = l
 				m.common.player.SetFlipped(m.common.player.playerType == black)
+
+				return m, nil
+			case m.common.choices[2]: // create
+				l := m.common.srv.mng.CreateLobby()
+				slog.Info("Create multiplayer lobby", "id:", l.id)
+
+				l.AddPlayer(m.common.sess, m.common.player)
+				m.common.player.lob = l
+				m.common.player.SetFlipped(m.common.player.playerType == black)
+
+				return m, nil
+			case m.common.choices[3]: // basic
+				l := m.common.srv.mng.CreateLobby()
+				slog.Info("Create basic lobby", "id:", l.id)
+
+				l.AddPlayer(m.common.sess, m.common.player)
+				m.common.player.lob = l
+				m.common.player.SetFlipped(m.common.player.playerType == black)
+				l.AddBot(NewBasicBot("Rudolph", l))
 
 				return m, nil
 			default:
