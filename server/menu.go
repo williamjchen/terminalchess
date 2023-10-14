@@ -38,6 +38,8 @@ func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.common.choice {
 			case m.common.choices[0]: // stockfish
 				l := m.common.srv.mng.CreateLobby()
+				go m.common.srv.db.Games.Insert(l.gameModel)
+
 				slog.Info("Create stockfish lobby", "id:", l.id)
 
 				l.AddPlayer(m.common.sess, m.common.player)
@@ -47,6 +49,8 @@ func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case m.common.choices[2]: // create
 				l := m.common.srv.mng.CreateLobby()
+				go m.common.srv.db.Games.Insert(l.gameModel)
+
 				slog.Info("Create multiplayer lobby", "id:", l.id)
 
 				l.AddPlayer(m.common.sess, m.common.player)
@@ -56,6 +60,8 @@ func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case m.common.choices[3]: // basic
 				l := m.common.srv.mng.CreateLobby()
+				go m.common.srv.db.Games.Insert(l.gameModel)
+
 				slog.Info("Create basic lobby", "id:", l.id)
 
 				l.AddPlayer(m.common.sess, m.common.player)

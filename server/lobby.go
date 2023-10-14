@@ -44,7 +44,7 @@ func NewLobby(done chan string, id string) *lobby {
 		timer: timer,
 		done: done,
 		bot: nil,
-		gameModel: &models.Game{},
+		gameModel: &models.Game{Code:id},
 	}
 	
 	go func() {
@@ -174,7 +174,7 @@ func (l *lobby) sendMove(move string, p *player) bool {
 	}
 
 	status := p.Move(move)
-	if (status) {
+	if status {
 		l.gameModel.Moves = append(l.gameModel.Moves, move)
 		go p.common.srv.db.Games.Update(l.gameModel)
 	}
