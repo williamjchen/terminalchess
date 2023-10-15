@@ -2,6 +2,9 @@ package server
 
 import (
 	"time"
+	"strings"
+
+	"github.com/williamjchen/terminalchess/stockfish"
 )
 type bot interface {
 	Name() string
@@ -13,9 +16,16 @@ type basicBot struct {
 	lob *lobby
 }
 
+type stockfishBot struct {
+	name string
+	lob *lobby
+}
+
+
+// BASIC
 func NewBasicBot(name string, lob *lobby) basicBot {
 	b := basicBot{
-		name: "Rudolph Bot",
+		name: name,
 		lob: lob,
 	}
 
@@ -28,5 +38,24 @@ func (b basicBot) GetMove() string {
 }
 
 func (b basicBot) Name() string {
+	return b.name
+}
+
+// STOCKFISH 
+func NewStockfishBot(name string, lob *lobby) stockfishBot {
+	b := stockfishBot{
+		name: name,
+		lob: lob,
+	}
+
+	return b
+}
+
+func (b stockfishBot) GetMove() string {
+	hist := b.lob.game.GetMoveHistory()
+	return stockfish.Move(strings.Join(hist, " "))
+}
+
+func (b stockfishBot) Name() string {
 	return b.name
 }

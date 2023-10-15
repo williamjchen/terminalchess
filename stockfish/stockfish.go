@@ -13,7 +13,7 @@ const (
 )
 
 func Move(moveHistory string) string {	
-	cmd := exec.Command("./stockfish-ubuntu-x86-64-avx2")
+	cmd := exec.Command("./stockfish/stockfish-ubuntu-x86-64-avx2")
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
