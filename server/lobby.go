@@ -172,7 +172,7 @@ func (l *lobby) sendMove(move string, p *player) bool {
 	if l.Status() != inProgres {
 		return false
 	}
-
+	
 	status := p.Move(move)
 	if status {
 		l.gameModel.Moves = l.game.GetMoveHistory()

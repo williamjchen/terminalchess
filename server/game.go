@@ -1,6 +1,7 @@
 package server
 
 import (
+	"time"
 	"strings"
 	"log/slog"
 
@@ -120,11 +121,13 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 	case chessMsg:
 		m.validMove = bool(msg)
 		if m.validMove && m.common.player.lob.bot != nil {
-			botMove :=  m.common.player.lob.bot.bot.GetMove()
-			slog.Info("Bot move", "move", botMove, "bot", m.common.player.lob.bot)
 			go func() {
+				time.Sleep(1 * time.Second)
+				botMove :=  m.common.player.lob.bot.bot.GetMove()
+				slog.Info("Bot move", "move", botMove, "bot", m.common.player.lob.bot)
 				m.common.player.lob.sendMove(botMove, m.common.player.lob.bot)
-			}()
+			} ()
+			
 		}
 
 	case updateMsg:

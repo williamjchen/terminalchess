@@ -33,7 +33,7 @@ func (g *GameModel) Insert(game *Game) error {
 }
 
 func (g *GameModel) Update(game *Game) error {
-	filter := bson.D{primitive.E{Key: "code", Value: game.Code}}
+	filter := bson.D{primitive.E{Key: "_id", Value: game.ID}}
 	update := bson.D{primitive.E{Key: "$set", Value: bson.D{
 		primitive.E{Key: "player1_name", Value: game.Player1Name},
 		primitive.E{Key: "player2_name", Value: game.Player2Name},

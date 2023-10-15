@@ -12,7 +12,7 @@ type basicBot struct {
 
 func NewBasicBot(name string, lob *lobby) basicBot {
 	b := basicBot{
-		name: "Rudolph",
+		name: "Rudolph Bot",
 		lob: lob,
 	}
 
