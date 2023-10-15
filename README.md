@@ -24,3 +24,6 @@ ssh terminalchess.com
 - [magic bitboards](https://analog-hors.github.io/site/magic-bitboards/)
 ### License
 Distributed under MIT License. See [LICENSE](./LICENSE) for more information.
+
+#### Stockfish
+This project uses sotkcfish. See [license and source here](./stockfish/stockfish/).
