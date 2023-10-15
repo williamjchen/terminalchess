@@ -26,4 +26,4 @@ ssh terminalchess.com
 Distributed under MIT License. See [LICENSE](./LICENSE) for more information.
 
 #### Stockfish
-This project uses sotkcfish. See [license and source here](./stockfish/stockfish/).
+This project uses stockfish. See [license and source here](./stockfish/stockfish/).
