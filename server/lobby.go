@@ -175,7 +175,7 @@ func (l *lobby) sendMove(move string, p *player) bool {
 
 	status := p.Move(move)
 	if status {
-		l.gameModel.Moves = append(l.gameModel.Moves, move)
+		l.gameModel.Moves = l.game.GetMoveHistory()
 		go p.common.srv.db.Games.Update(l.gameModel)
 	}
 	l.SendMsg(p, updateMsg{})

@@ -35,6 +35,10 @@ func (g *GameModel) Insert(game *Game) error {
 func (g *GameModel) Update(game *Game) error {
 	filter := bson.D{primitive.E{Key: "code", Value: game.Code}}
 	update := bson.D{primitive.E{Key: "$set", Value: bson.D{
+		primitive.E{Key: "player1_name", Value: game.Player1Name},
+		primitive.E{Key: "player2_name", Value: game.Player2Name},
+		primitive.E{Key: "player1_addr", Value: game.Player1Addr},
+		primitive.E{Key: "player2_addr", Value: game.Player2Addr},
 		primitive.E{Key: "moves", Value: game.Moves},
 	}}}
 	opts := options.FindOneAndUpdate().SetUpsert(false)

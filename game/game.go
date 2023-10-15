@@ -41,6 +41,9 @@ func (g *Game) GetRandomMove() string {
 	return g.board.getRandomMove()
 }
 
+func (g *Game) GetMoveHistory() []string {
+	return g.board.getMoveHistory()
+}
 // TODO - promotion
 func parseMove(move string) (bool, int, int) {
 	move = strings.ToLower(move)
