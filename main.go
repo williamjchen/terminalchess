@@ -33,7 +33,7 @@ func connect() *mongo.Collection {
 
 func main() {
 	c1 := connect()
-	s, err := server.NewServer(".ssh/term_info_ed25519", "0.0.0.0", 2324, c1)
+	s, err := server.NewServer("./.ssh/term_info_ed25519", "0.0.0.0", 2324, c1)
 	if err != nil {
 		return
 	}

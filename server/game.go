@@ -122,7 +122,7 @@ func gameUpdate(msg tea.Msg, m *gameModel) (tea.Model, tea.Cmd) {
 		if m.validMove && m.common.player.lob.bot != nil {
 			go func() {
 				botMove :=  m.common.player.lob.bot.bot.GetMove()
-				slog.Info("Bot move", "move", botMove, "bot", m.common.player.lob.bot)
+				slog.Info("Bot move", "move", botMove)
 				m.common.player.lob.sendMove(botMove, m.common.player.lob.bot)
 			} ()
 			
