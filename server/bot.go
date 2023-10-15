@@ -1,5 +1,8 @@
 package server
 
+import (
+	"time"
+)
 type bot interface {
 	Name() string
 	GetMove() string
@@ -20,6 +23,7 @@ func NewBasicBot(name string, lob *lobby) basicBot {
 }
 
 func (b basicBot) GetMove() string {
+	time.Sleep(1 * time.Second)
 	return b.lob.game.GetRandomMove()
 }
 
