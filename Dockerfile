@@ -18,7 +18,7 @@ FROM alpine:3.17
 
 WORKDIR /bin
 
-COPY .ssh/ /bin
+COPY .ssh/ /bin/.ssh
 COPY stockfish/ /bin/stockfish
 COPY --from=build /bin/server /bin/server
 
