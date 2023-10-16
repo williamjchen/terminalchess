@@ -156,6 +156,11 @@ func (p *position) move(origin, dest int) bool {
 		case "K":
 			p.removeAt(dest, false)
 			p.movePiece(5, 0, origin_pos, dest_pos)
+			if dest == origin - 2 {
+				p.movePiece(3, 0, uint64(1) << (origin - 4), uint64(1) << (origin - 1))
+			} else if dest == origin + 2 {
+				p.movePiece(3, 0, uint64(1) << (origin + 3), uint64(1) << (origin + 1))
+			}
 		case "p":
 			p.removeAt(dest, true)
 			p.movePiece(0, 1, origin_pos, dest_pos)
@@ -174,6 +179,11 @@ func (p *position) move(origin, dest int) bool {
 		case "k":
 			p.removeAt(dest, true)
 			p.movePiece(5, 1, origin_pos, dest_pos)
+			if dest == origin - 2 {
+				p.movePiece(3, 1, uint64(1) << (origin - 4), uint64(1) << (origin - 1))
+			} else if dest == origin + 2 {
+				p.movePiece(3, 1, uint64(1) << (origin + 3), uint64(1) << (origin + 1))
+			}
 		}
 
 		if p.turn == WhiteTurn {
