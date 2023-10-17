@@ -1,3 +1,4 @@
+![banner](./assets/banner.jpg)
 # Terminal Chess
 Play chess in your terminal.
 
