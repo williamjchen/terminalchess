@@ -26,6 +26,10 @@ type GameModel struct {
 }
 
 func (g *GameModel) Insert(game *Game) error {
+	if g.DB == nil {
+		return nil
+	}
+
 	game.ID = primitive.NewObjectID()
 	game.CreatedAt = time.Now()
 	_, err := g.DB.InsertOne(context.TODO(), game)
@@ -33,6 +37,10 @@ func (g *GameModel) Insert(game *Game) error {
 }
 
 func (g *GameModel) Update(game *Game) error {
+	if g.DB == nil {
+		return nil
+	}
+
 	filter := bson.D{primitive.E{Key: "_id", Value: game.ID}}
 	update := bson.D{primitive.E{Key: "$set", Value: bson.D{
 		primitive.E{Key: "player1_name", Value: game.Player1Name},
@@ -47,6 +55,10 @@ func (g *GameModel) Update(game *Game) error {
 }
 
 func (g *GameModel) Get(id string) (*Game, error) {
+	if g.DB == nil {
+		return nil, nil
+	}
+
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err

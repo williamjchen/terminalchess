@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"context"
 	"os"
+	"flag"
 
 	"github.com/williamjchen/terminalchess/server"	
 
@@ -32,7 +33,14 @@ func connect() *mongo.Collection {
 }
 
 func main() {
-	c1 := connect()
+	dbPtr := flag.Bool("enableDB", false, "true if providing mongostring")
+	flag.Parse()
+
+	var c1 *mongo.Collection = nil
+	if *dbPtr {
+		c1 = connect()
+	}
+	
 	s, err := server.NewServer("./.ssh/term_info_ed25519", "0.0.0.0", 2324, c1)
 	if err != nil {
 		return
