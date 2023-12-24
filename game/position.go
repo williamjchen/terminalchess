@@ -299,7 +299,8 @@ func (p *position) generateLegalMoves() []move {
 		moves = append(moves, p.kingPushes(allowed_dests)...) // king captures?
 		return moves
 	} else if num_attackers == 1 { // single check
-		pinned := p.generatePinnedSquares()
+		pinned, mvs := p.generatePinnedSquares(allowed_dests)
+		moves = append(moves, mvs...)
 		nonPinned := ^pinned
 		//slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
 
@@ -315,9 +316,10 @@ func (p *position) generateLegalMoves() []move {
 	}
 
 	// non-check moves
-	pinned := p.generatePinnedSquares()
+	pinned, mvs := p.generatePinnedSquares(magic.Everything)
+	moves = append(moves, mvs...)
 	nonPinned := ^pinned
-	//slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
+	slog.Info("pinnned", "pinned", pinned, "not pinned", nonPinned)
 
 	moves = append(moves, p.pawnCaptures(nonPinned, magic.Everything)...)
 	moves = append(moves, p.pawnPushes(nonPinned, magic.Everything)...)
@@ -421,12 +423,17 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	return num_attackers, attackers_mask
 }
 
-func (p *position) generatePinnedSquares () uint64 {
+// finds pinned squares and their respective moves
+func (p *position) generatePinnedSquares(dest uint64) (uint64, []move){
+	moves := []move{}
 	kingSquare := bits.TrailingZeros64(p.kingPos)
+	kingFile := kingSquare % 8 
+	kingRank := kingSquare / 8
 	var opponent_slide uint64 = 0
 	var king_slide uint64 = 0
 	king_slide = p.generateDiagonalSquares(kingSquare, p.getAllPieces()) | p.generateStraightSquares(kingSquare, p.getAllPieces())
-	//slog.Info("generate pinned", "king", kingSquare, "slide", king_slide)
+	slog.Info("generate pinned", "king", kingSquare, "slide", king_slide, "dest", dest)
+
 	// rook + queen
 	op := p.e_rookPos | p.e_queenPos
 	for op != 0 {
@@ -436,18 +443,51 @@ func (p *position) generatePinnedSquares () uint64 {
 
 		opponent_slide |= targs
 	}
+	// check pinned pieces for orthogonal attacks
+	pinned := king_slide & opponent_slide & p.allPieces
+	for pinned != 0 {
+		pinned_piece_idx := bits.TrailingZeros64(pinned)
+		pinned_piece := uint64(1) << pinned_piece_idx
+		pinned &= pinned - 1
+
+		if p.rookPos & pinned_piece != 0 || p.queenPos & pinned_piece != 0 { // rook + queen
+			if pinned_piece_idx % 8 == kingFile {
+				moves = append(moves, p.rookMoves(pinned_piece, dest & magic.OnlyFile[kingFile])...)
+			} else { // same rank
+				moves = append(moves, p.rookMoves(pinned_piece, dest & magic.OnlyRank[kingRank])...)
+			}
+		} else if p.pawnPos & pinned_piece != 0 { // pawn
+			if pinned_piece_idx % 8 == kingFile {
+				moves = append(moves, p.pawnPushes(pinned_piece, dest)...)
+			}
+		}
+	}
 
 	// bishop + queen
+	more_op_slide := uint64(0)
 	op = p.e_bishopPos | p.e_queenPos
 	for op != 0 {
 		bishopIdx := bits.TrailingZeros64(op)
 		op &= op - 1
 		targs := p.generateDiagonalSquares(bishopIdx, p.getAllPieces())
 
-		opponent_slide |= targs
+		more_op_slide |= targs
 	}
+	pinned = king_slide & more_op_slide & p.allPieces
+	for pinned != 0 {
+		pinned_piece_idx := bits.TrailingZeros64(pinned)
+		pinned_piece := uint64(1) << pinned_piece_idx
+		pinned &= pinned - 1
 
-	return king_slide & opponent_slide & p.allPieces
+		if p.bishopPos & pinned_piece != 0 || p.queenPos & pinned_piece != 0 { // bishop + queen
+			moves = append(moves, p.bishopMoves(pinned_piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), magic.MagicBishopBlockerMasks[kingSquare])])...)
+		} else if p.pawnPos & pinned_piece != 0 { // pawn
+			moves = append(moves, p.pawnCaptures(pinned_piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), magic.MagicBishopBlockerMasks[kingSquare])])...)
+		}
+	}
+	opponent_slide |= more_op_slide
+
+	return king_slide & opponent_slide & p.allPieces, moves
 }
 
 func (p *position) generateDiagonalSquares(origin int, pieces uint64) uint64 {
@@ -578,12 +618,13 @@ func (p *position) pawnCaptures(allowed, dest uint64) []move{
 	targets |= p.e_allPieces
 	targets &= dest
 
+	myPawns := p.pawnPos & allowed
 	if p.turn == WhiteTurn {
-		right = p.pawnPos << 9 & magic.NotAFile & targets
-		left = p.pawnPos << 7 & magic.NotHFile & targets
+		right = myPawns << 9 & magic.NotAFile & targets
+		left = myPawns << 7 & magic.NotHFile & targets
 	} else if p.turn == BlackTurn {
-		right = p.pawnPos >> 7 & magic.NotAFile & targets
-		left = p.pawnPos >> 9 & magic.NotHFile & targets
+		right = myPawns >> 7 & magic.NotAFile & targets
+		left = myPawns >> 9 & magic.NotHFile & targets
 		left_mod = 9
 		right_mod = 7
 	}
