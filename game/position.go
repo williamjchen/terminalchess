@@ -350,6 +350,11 @@ func (p *position) underDirectAttack(defender turn, squares ...int) bool {
 	return false
 }
 
+func (p * position) isIncheck() bool {
+	n, _ := p.numAttacks(p.turn, p.kingPos)
+	return n >= 1
+}
+
 func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 	square := bits.TrailingZeros64(kingPos)
 	num_attackers := 0
