@@ -145,6 +145,7 @@ func (p *position) move(incMove move) bool {
 			p.removeAt(dest, false)
 			p.movePiece(0, 0, origin_pos, dest_pos)
 			if dest >= 56 && dest <= 63 { // back row promotion
+				p.removeAt(dest, true) // remove own piece
 				p.movePiece(promotion, 0, dest_pos, dest_pos)
 			}
 		case "N":
@@ -170,6 +171,10 @@ func (p *position) move(incMove move) bool {
 		case "p":
 			p.removeAt(dest, true)
 			p.movePiece(0, 1, origin_pos, dest_pos)
+			if dest >= 0 && dest <= 7 { // back row promotion
+				p.removeAt(dest, false) // remove own piece
+				p.movePiece(promotion, 1, dest_pos, dest_pos)
+			}
 		case "n":
 			p.removeAt(dest, true)
 			p.movePiece(1, 1, origin_pos, dest_pos)
@@ -182,9 +187,6 @@ func (p *position) move(incMove move) bool {
 		case "q":
 			p.removeAt(dest, true)
 			p.movePiece(4, 1, origin_pos, dest_pos)
-			if dest >= 0 && dest <= 7 { // back row promotion
-				p.movePiece(promotion, 1, dest_pos, dest_pos)
-			}
 		case "k":
 			p.removeAt(dest, true)
 			p.movePiece(5, 1, origin_pos, dest_pos)

@@ -6,11 +6,11 @@ package game
 // B - 6 bits for origin
 // C - 6 bits for dest
 
-// 0 - pawn  / default
+// 0 - pawn
 // 1 - knight
 // 2 - bishop
 // 3 - rook
-// 4 - queen
+// 4 - queen // default
 
 
 type move uint16
@@ -28,7 +28,7 @@ func (m *move) promotion() int{
 }
 
 func (m *move) create(from, to int, prom rune) {
-	promotion := 0
+	promotion := 4 // default
 	if prom == 'n' {
 		promotion = 1
 	} else if prom == 'b' {
