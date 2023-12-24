@@ -49,8 +49,8 @@ func NewBoard() *board {
 	return &b
 }
 
-func (b *board) move(origin, dest int) bool{
-	return b.pos.move(origin, dest)
+func (b *board) move(move move) bool{
+	return b.pos.move(move)
 }
 
 func (b *board) getRandomMove() string {

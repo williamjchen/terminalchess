@@ -25,12 +25,12 @@ func (g *Game) PrintBoard(flipped bool) string{ // flipped = false is white at b
 }
 
 func (g *Game) Move(move string) bool {
-	valid, origin, dest := parseMove(move)
-	slog.Info("parse command", "valid", valid, "origin", origin, "dest", dest)
+	valid, moveObj := parseMove(move)
+	slog.Info("parse command", "valid", valid, "origin", moveObj.origin(), "dest", moveObj.dest(), "promotion", moveObj.promotion())
 	if !valid {
 		return false
 	}
-	return g.board.move(origin, dest)
+	return g.board.move(moveObj)
 }
 
 func (g *Game) SetStatus(stat turn) {
@@ -45,22 +45,30 @@ func (g *Game) GetMoveHistory() []string {
 	return g.board.getMoveHistory()
 }
 // TODO - promotion
-func parseMove(move string) (bool, int, int) {
-	move = strings.ToLower(move)
-	if len(move) >= 4 {
-		fromRank := rune(move[0])
-		fromFile := rune(move[1])
-		toRank := rune(move[2])
-		toFile := rune(move[3])
+func parseMove(moveToParse string) (bool, move) {
+	moveToParse = strings.ToLower(moveToParse)
+	promotion := 'p'
+	var newMove move
+
+	if len(moveToParse) >= 4 {
+		fromRank := rune(moveToParse[0])
+		fromFile := rune(moveToParse[1])
+		toRank := rune(moveToParse[2])
+		toFile := rune(moveToParse[3])
 
 		if fromRank < 'a' || fromRank > 'h' || fromFile < '1' || fromFile > '8' {
-			return false, -1, -1
+			return false, newMove
 		}
 		if toRank < 'a' || toRank > 'h' || toFile < '1' || toFile > '8' {
-			return false, -1, -1
+			return false, newMove
 		}
 
-		return true, int((fromFile - '1') * 8 + (fromRank - 'a')), int((toFile - '1') * 8 + (toRank - 'a'))
+		if len(moveToParse) >= 5 {
+			promotion = rune(moveToParse[4])
+		}
+
+		newMove.create(int((fromFile - '1') * 8 + (fromRank - 'a')), int((toFile - '1') * 8 + (toRank - 'a')), promotion)
+		return true, newMove
 	}
-	return false, -1, -1
+	return false, newMove
 }

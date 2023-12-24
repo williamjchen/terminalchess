@@ -127,20 +127,26 @@ func (p *position) Status() turn {return p.turn}
 
 // we use these functions to create simple move.
 
-func (p *position) move(origin, dest int) bool {
+func (p *position) move(incMove move) bool {
+	origin := incMove.origin()
+	dest := incMove.dest()
+	promotion := incMove.promotion()
+
 	origin_pos := uint64(1) << origin
 	dest_pos := uint64(1) << dest
 	slog.Info("move", "origin", origin, "dest", dest)
 	if p.validateMove(origin, dest) {
 		origin_piece := p.pieceAtSquare(origin)
 		slog.Info("valid move", "piece", origin_piece)
-		var newMove move
-		newMove.create(origin, dest)
-		p.moveHistory = append(p.moveHistory, newMove)
+
+		p.moveHistory = append(p.moveHistory, incMove)
 		switch origin_piece {
 		case "P":
 			p.removeAt(dest, false)
 			p.movePiece(0, 0, origin_pos, dest_pos)
+			if dest >= 56 && dest <= 63 { // back row promotion
+				p.movePiece(promotion, 0, dest_pos, dest_pos)
+			}
 		case "N":
 			p.removeAt(dest, false)
 			p.movePiece(1, 0, origin_pos, dest_pos)
@@ -176,6 +182,9 @@ func (p *position) move(origin, dest int) bool {
 		case "q":
 			p.removeAt(dest, true)
 			p.movePiece(4, 1, origin_pos, dest_pos)
+			if dest >= 0 && dest <= 7 { // back row promotion
+				p.movePiece(promotion, 1, dest_pos, dest_pos)
+			}
 		case "k":
 			p.removeAt(dest, true)
 			p.movePiece(5, 1, origin_pos, dest_pos)
@@ -192,6 +201,7 @@ func (p *position) move(origin, dest int) bool {
 			p.turn = WhiteTurn
 		}
 		p.nextTurnMoves = p.cleanMoves(p.generateLegalMoves())
+		slog.Info("moves", "moves", p.nextTurnMoves)
 		if len(p.nextTurnMoves) == 0 {
 			if p.turn == WhiteTurn {
 				p.turn = BlackMate
@@ -472,7 +482,7 @@ func (p *position) kingPushes(dest uint64) []move{
 		}
 
 		var move move
-		move.create(kingSquare, target)
+		move.create(kingSquare, target, 'p')
 		moves = append(moves, move)
 	}
 
@@ -504,12 +514,12 @@ func (p *position) kingMoves(dest uint64) []move{
 
 	if canCastleKingSide {
 		var move move
-		move.create(kingSquare, kingSquare + 2)
+		move.create(kingSquare, kingSquare + 2, 'p')
 		moves = append(moves, move)
 	}
 	if canCastleQueenSide {
 		var move move
-		move.create(kingSquare, kingSquare - 2)
+		move.create(kingSquare, kingSquare - 2, 'p')
 		moves = append(moves, move)
 	}
 	moves = append(moves, p.kingPushes(dest)...)
@@ -539,7 +549,7 @@ func (p *position) pawnPushes(allowed, dest uint64) []move{
 		target := bits.TrailingZeros64(targets)
 		targets &= targets - 1
 		var move move
-		move.create(target + modifier, target)
+		move.create(target + modifier, target, 'p')
 		moves = append(moves, move)
 	}
 
@@ -547,7 +557,7 @@ func (p *position) pawnPushes(allowed, dest uint64) []move{
 		doubleTar := bits.TrailingZeros64(double)
 		double &= double - 1
 		var move move
-		move.create(doubleTar + modifier + modifier, doubleTar)
+		move.create(doubleTar + modifier + modifier, doubleTar, 'p')
 		moves = append(moves, move)
 	}
 
@@ -577,7 +587,7 @@ func (p *position) pawnCaptures(allowed, dest uint64) []move{
 		target := bits.TrailingZeros64(right)
 		right &= right - 1
 		var move move
-		move.create(target + right_mod, target)
+		move.create(target + right_mod, target, 'p')
 		moves = append(moves, move)
 	}
 
@@ -585,7 +595,7 @@ func (p *position) pawnCaptures(allowed, dest uint64) []move{
 		target := bits.TrailingZeros64(left)
 		left &= left - 1
 		var move move
-		move.create(target + left_mod, target)
+		move.create(target + left_mod, target, 'p')
 		moves = append(moves, move)
 	}
 	return moves
@@ -661,7 +671,7 @@ func generateMoves(square int, targets uint64) []move{
 		target := bits.TrailingZeros64(targets)
 		targets &= targets - 1
 		var move move
-		move.create(square, target)
+		move.create(square, target, 'p')
 		moves = append(moves, move)
 	}
 	return moves
