@@ -89,7 +89,8 @@ func NewPosition(fen string) *position {
 	p.castleRights = 0
 	p.enPassant = 0
 	p.loadPosition(fen)
-	p.nextTurnMoves = p.cleanMoves(p.generateLegalMoves())
+	moves, _ := p.generateLegalMoves()
+	p.nextTurnMoves = p.cleanMoves(moves)
 
 	return &p
 }
@@ -220,10 +221,13 @@ func (p *position) move(incMove move) bool {
 		} else if p.turn == BlackTurn {
 			p.turn = WhiteTurn
 		}
-		p.nextTurnMoves = p.cleanMoves(p.generateLegalMoves())
+		mvs, numAtk := p.generateLegalMoves()
+		p.nextTurnMoves = p.cleanMoves(mvs)
 		slog.Info("moves", "moves", p.nextTurnMoves)
 		if len(p.nextTurnMoves) == 0 {
-			if p.turn == WhiteTurn {
+			if numAtk == 0 {
+				p.turn = Stalemate
+			} else if p.turn == WhiteTurn {
 				p.turn = BlackMate
 			} else if p.turn == BlackTurn {
 				p.turn = WhiteMate
@@ -278,7 +282,7 @@ func (p *position) removeAt(square int, white bool) {
 }
 
 // This is used to generate all moves. Required for engine
-func (p *position) generateLegalMoves() []move {
+func (p *position) generateLegalMoves() ([]move, int) {
 	var moves []move
 	
 	if p.turn == WhiteTurn {
@@ -317,7 +321,7 @@ func (p *position) generateLegalMoves() []move {
 	slog.Info("attackers", "num", num_attackers, "allowed", allowed_dests)
 	if num_attackers > 1 { // multiple check - only king moves
 		moves = append(moves, p.kingPushes(allowed_dests)...) // king captures?
-		return moves
+		return moves, num_attackers
 	} else if num_attackers == 1 { // single check
 		pinned, mvs := p.generatePinnedSquares(allowed_dests)
 		moves = append(moves, mvs...)
@@ -332,7 +336,7 @@ func (p *position) generateLegalMoves() []move {
 		moves = append(moves, p.queenMoves(nonPinned, allowed_dests)...)
 		moves = append(moves, p.kingPushes(allowed_dests)...)
 
-		return moves
+		return moves, num_attackers
 	}
 
 	// non-check moves
@@ -349,7 +353,7 @@ func (p *position) generateLegalMoves() []move {
 	moves = append(moves, p.queenMoves(nonPinned, magic.Everything)...)
 	moves = append(moves, p.kingMoves(magic.Everything)...)
 
-	return moves
+	return moves, num_attackers
 }
 
 func (p *position) cleanMoves(moves []move) []move {
