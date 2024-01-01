@@ -45,7 +45,7 @@ func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				l.AddPlayer(m.common.sess, m.common.player)
 				m.common.player.lob = l
 				m.common.player.SetFlipped(m.common.player.playerType == black)
-				l.AddBot(NewStockfishBot("Stockfish Depth 24", l))
+				l.AddBot(NewStockfishBot("Stockfish Depth 24", 24, l))
 
 				return m, nil
 			case m.common.choices[2]: // create

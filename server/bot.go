@@ -19,6 +19,7 @@ type basicBot struct {
 type stockfishBot struct {
 	name string
 	lob *lobby
+	depth int
 }
 
 
@@ -42,10 +43,11 @@ func (b basicBot) Name() string {
 }
 
 // STOCKFISH 
-func NewStockfishBot(name string, lob *lobby) stockfishBot {
+func NewStockfishBot(name string, depth int, lob *lobby) stockfishBot {
 	b := stockfishBot{
 		name: name,
 		lob: lob,
+		depth: depth,
 	}
 
 	return b
@@ -53,7 +55,7 @@ func NewStockfishBot(name string, lob *lobby) stockfishBot {
 
 func (b stockfishBot) GetMove() string {
 	hist := b.lob.game.GetMoveHistory()
-	return stockfish.Move(strings.Join(hist, " "))
+	return stockfish.Move(strings.Join(hist, " "), b.depth)
 }
 
 func (b stockfishBot) Name() string {

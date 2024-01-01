@@ -8,11 +8,7 @@ import (
 	"bufio"
 )
 
-const (
-	depth = 24
-)
-
-func Move(moveHistory string) string {	
+func Move(moveHistory string, depth int) string {	
 	cmd := exec.Command("./stockfish/stockfish-ubuntu-x86-64")
 
 	stdin, err := cmd.StdinPipe()
