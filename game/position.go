@@ -140,13 +140,22 @@ func (p *position) move(incMove move) bool {
 		slog.Info("valid move", "piece", origin_piece)
 
 		p.moveHistory = append(p.moveHistory, incMove)
-		switch origin_piece {
-		case "P":
+		switch origin_piece { // CAPITAL IS WHITE
+		case "P": // white
 			p.removeAt(dest, false)
 			p.movePiece(0, 0, origin_pos, dest_pos)
+			if dest_pos == p.enPassant {
+				p.removeAt(bits.TrailingZeros64(p.enPassant >> 8), false)
+			}
 			if dest >= 56 && dest <= 63 { // back row promotion
 				p.removeAt(dest, true) // remove own piece
 				p.movePiece(promotion, 0, dest_pos, dest_pos)
+			} 
+			
+			if origin_pos << 16 == dest_pos { // move two forward
+				p.enPassant = origin_pos << 8
+			} else {
+				p.enPassant = 0
 			}
 		case "N":
 			p.removeAt(dest, false)
@@ -168,12 +177,21 @@ func (p *position) move(incMove move) bool {
 			} else if dest == origin + 2 {
 				p.movePiece(3, 0, uint64(1) << (origin + 3), uint64(1) << (origin + 1))
 			}
-		case "p":
+		case "p": // black
 			p.removeAt(dest, true)
 			p.movePiece(0, 1, origin_pos, dest_pos)
+			if dest_pos == p.enPassant {
+				p.removeAt(bits.TrailingZeros64(p.enPassant << 8), true)
+			}
 			if dest >= 0 && dest <= 7 { // back row promotion
 				p.removeAt(dest, false) // remove own piece
 				p.movePiece(promotion, 1, dest_pos, dest_pos)
+			}
+			
+			if origin_pos >> 16 == dest_pos { // move two forward
+				p.enPassant = origin_pos >> 8
+			} else {
+				p.enPassant = 0
 			}
 		case "n":
 			p.removeAt(dest, true)
