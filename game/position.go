@@ -532,7 +532,7 @@ func (p *position) generatePinnedSquares(dest uint64) (uint64, []move){
 			moves = append(moves, p.bishopMoves(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
 			moves = append(moves, p.queenMoves(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
 		} else if p.pawnPos & piece != 0 { // pawn
-			moves = append(moves, p.pawnCaptures(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), magic.MagicBishopBlockerMasks[kingSquare])])...)
+			moves = append(moves, p.pawnCaptures(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
 		}
 	}
 
