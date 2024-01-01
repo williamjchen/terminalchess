@@ -446,71 +446,93 @@ func (p *position) numAttacks(defender turn, kingPos uint64) (int, uint64) {
 // finds pinned squares and their respective moves
 func (p *position) generatePinnedSquares(dest uint64) (uint64, []move){
 	moves := []move{}
+
 	kingSquare := bits.TrailingZeros64(p.kingPos)
 	kingFile := kingSquare % 8 
 	kingRank := kingSquare / 8
-	var pinned_pieces uint64 = 0
 	king_straight_slide := p.generateStraightSquares(kingSquare, p.getAllPieces())
 	king_diag_slide := p.generateDiagonalSquares(kingSquare, p.getAllPieces())
+
+	var pinned_pieces uint64 = 0
 	slog.Info("generate pinned", "king", kingSquare, "diag slide", king_diag_slide, "striaght", king_straight_slide, "dest", dest)
 
 	// rook + queen
 	op := p.e_rookPos | p.e_queenPos
 	for op != 0 {
 		rookIdx := bits.TrailingZeros64(op)
+		rookFile := rookIdx % 8
+		rookRank := rookIdx / 8
 		op &= op - 1
 		targs := p.generateStraightSquares(rookIdx, p.getAllPieces())
 
-		pinned_pieces |= (targs & king_straight_slide)
-	}
-	// check pinned pieces for orthogonal attacks
-	pinned := pinned_pieces & p.allPieces
-	for pinned != 0 {
-		pinned_piece_idx := bits.TrailingZeros64(pinned)
-		pinned_piece := uint64(1) << pinned_piece_idx
-		pinned &= pinned - 1
+		piece := targs & king_straight_slide & p.allPieces
+		piece_idx := bits.TrailingZeros64(piece)
+		pieceFile := piece_idx % 8
+		pieceRank := piece_idx / 8
 
-		if p.rookPos & pinned_piece != 0 || p.queenPos & pinned_piece != 0 { // rook + queen
-			if pinned_piece_idx % 8 == kingFile {
-				moves = append(moves, p.rookMoves(pinned_piece, dest & magic.OnlyFile[kingFile])...)
-				moves = append(moves, p.queenMoves(pinned_piece, dest & magic.OnlyFile[kingFile])...)
+		if piece == 0 {
+			continue
+		}
+
+		rankPin := kingRank == pieceRank && pieceRank == rookRank
+		filePin := kingFile == pieceFile && pieceFile == rookFile
+		if !rankPin && !filePin {
+			continue
+		}
+
+		// at this stage, we've confirmed a piece is pinned
+		pinned_pieces |= piece
+
+		if p.rookPos & piece != 0 || p.queenPos & piece != 0 { // rook + queen
+			if piece_idx % 8 == kingFile {
+				moves = append(moves, p.rookMoves(piece, dest & magic.OnlyFile[kingFile])...)
+				moves = append(moves, p.queenMoves(piece, dest & magic.OnlyFile[kingFile])...)
 			} else { // same rank
-				moves = append(moves, p.rookMoves(pinned_piece, dest & magic.OnlyRank[kingRank])...)
-				moves = append(moves, p.queenMoves(pinned_piece, dest & magic.OnlyRank[kingRank])...)
+				moves = append(moves, p.rookMoves(piece, dest & magic.OnlyRank[kingRank])...)
+				moves = append(moves, p.queenMoves(piece, dest & magic.OnlyRank[kingRank])...)
 			}
-		} else if p.pawnPos & pinned_piece != 0 { // pawn
-			if pinned_piece_idx % 8 == kingFile {
-				moves = append(moves, p.pawnPushes(pinned_piece, dest)...)
+		} else if p.pawnPos & piece != 0 { // pawn
+			if piece_idx % 8 == kingFile {
+				moves = append(moves, p.pawnPushes(piece, dest)...)
 			}
 		}
 	}
-
 	// bishop + queen
-	more_pinned := uint64(0)
 	op = p.e_bishopPos | p.e_queenPos
 	for op != 0 {
 		bishopIdx := bits.TrailingZeros64(op)
+		bishopFile := bishopIdx % 8
+		bishopRank := bishopIdx / 8
 		op &= op - 1
 		targs := p.generateDiagonalSquares(bishopIdx, p.getAllPieces())
 
-		more_pinned |= (targs & king_diag_slide)
-	}
-	pinned_pieces |= more_pinned
-	pinned = more_pinned & p.allPieces
-	for pinned != 0 {
-		pinned_piece_idx := bits.TrailingZeros64(pinned)
-		pinned_piece := uint64(1) << pinned_piece_idx
-		pinned &= pinned - 1
+		piece := targs & king_diag_slide & p.allPieces
+		piece_idx := bits.TrailingZeros64(piece)
+		pieceFile := piece_idx % 8
+		pieceRank := piece_idx / 8
 
-		if p.bishopPos & pinned_piece != 0 || p.queenPos & pinned_piece != 0 { // bishop + queen
-			moves = append(moves, p.bishopMoves(pinned_piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
-			moves = append(moves, p.queenMoves(pinned_piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
-		} else if p.pawnPos & pinned_piece != 0 { // pawn
-			moves = append(moves, p.pawnCaptures(pinned_piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), magic.MagicBishopBlockerMasks[kingSquare])])...)
+		if piece == 0 {
+			continue
+		}
+
+		dirBishopPiece := float32(bishopRank - pieceRank) / float32(bishopFile - pieceFile)
+		dirPieceKing := float32(pieceRank - kingRank) / float32(pieceFile - kingFile)
+		if dirBishopPiece != dirPieceKing {
+			continue
+		}
+
+		// at this stage, we've confirmed a piece is pinned
+		pinned_pieces |= piece
+
+		if p.bishopPos & piece != 0 || p.queenPos & piece != 0 { // bishop + queen
+			moves = append(moves, p.bishopMoves(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
+			moves = append(moves, p.queenMoves(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), 0)])...)
+		} else if p.pawnPos & piece != 0 { // pawn
+			moves = append(moves, p.pawnCaptures(piece, dest & magic.MagicMovesBishop[kingSquare][magic.BishopHash(magic.Square(kingSquare), magic.MagicBishopBlockerMasks[kingSquare])])...)
 		}
 	}
 
-	return pinned_pieces & p.allPieces, moves
+	return pinned_pieces, moves
 }
 
 func (p *position) generateDiagonalSquares(origin int, pieces uint64) uint64 {
